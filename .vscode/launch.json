@@ -1,0 +1,29 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Cortex Debug",
+            "cwd": "${workspaceFolder}",
+            "executable": "./target/riscv32imac-unknown-none-elf/debug/rustsbi-hpm",
+            "request": "launch",
+            "type": "cortex-debug",
+            "runToEntryPoint": "main",
+            "preLaunchCommands": [
+                "monitor reset halt",
+                "load",
+                "monitor set_reg {pc 0}",
+            ],
+            "overrideResetCommands": [
+                "monitor reset halt",
+                "monitor set_reg {pc 0}",
+            ],
+            "overrideLaunchCommands": [],
+            "gdbPath": "riscv64-unknown-elf-gdb",
+            "servertype": "openocd",
+            "configFiles": [
+                "./openocd.cfg"
+            ],
+            "preLaunchTask": "Cargo build"
+        }
+    ]
+}
