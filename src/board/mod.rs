@@ -34,7 +34,7 @@ pub fn board_init() {
 }
 
 #[inline]
-pub fn print(args: fmt::Arguments) {
+pub fn _print(args: fmt::Arguments) {
     let mut guard = UART.lock();
 
     guard.as_mut().unwrap().write_fmt(args).unwrap();
@@ -43,13 +43,15 @@ pub fn print(args: fmt::Arguments) {
 #[macro_export]
 macro_rules! print {
     ($fmt: literal $(, $($args: tt)+)?) => {
-        $crate::board::print(format_args!($fmt $(, $($args)+)?));
+        $crate::board::_print(format_args!($fmt $(, $($args)+)?));
     };
 }
 
 #[macro_export]
 macro_rules! println {
-    ($fmt: literal $(, $($args: tt)+)?) => {
-        $crate::board::print(format_args!(concat!($fmt, "\n") $(, $($args)+)?));
-    };
+    () => ($crate::print!("\n"));
+    ($($arg:tt)*) => {{
+        $crate::board::_print(core::format_args!($($arg)*));
+        $crate::println!();
+    }}
 }

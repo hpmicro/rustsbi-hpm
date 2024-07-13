@@ -4,14 +4,18 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-rustsbi = "0.3.2"
-hpm-rt = "0.1"
-panic-halt = "0.2"
+rustsbi = { version = "0.3.2", features = ["machine"] }
+sbi-spec = { version = "0.0.7", features = ["legacy"] }
+hpm-rt = { path = "../hpm-rt" }
 hpm-ral = { git = "https://github.com/hpm-rs/hpm-ral", version = "0.0.1", features = [
     "hpm6750",
 ] }
-riscv = "0.11"
+riscv = "0.10"
 spin = "0.9"
+fast-trap = { version = "0.0.1", features = ["riscv-m"] }
 
 [build-dependencies]
-hpm-rt = "0.1"
+hpm-rt = { path = "../hpm-rt" }
+
+[profile.release]
+debug = true

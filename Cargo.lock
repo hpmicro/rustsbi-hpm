@@ -37,10 +37,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "embedded-hal"
-version = "1.0.0"
+name = "fast-trap"
+version = "0.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "361a90feb7004eca4019fb28352a9465666b24f840f5c3cddf0ff13920590b89"
+checksum = "7fbe69badc2e0dc98ad2787648fa140b5772d24b49e9a6b180a67e1348f7544c"
 
 [[package]]
 name = "hpm-ral"
@@ -54,12 +54,10 @@ dependencies = [
 [[package]]
 name = "hpm-rt"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "195eda9b76a59dc9ba7758bbdd447f4776341579304dbff02d8645a166c52092"
 dependencies = [
  "cfg-if",
  "r0",
- "riscv 0.10.1",
+ "riscv",
  "riscv-rt-macros",
 ]
 
@@ -87,12 +85,6 @@ name = "nb"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8d5439c4ad607c3c23abf66de8c8bf57ba8adcd1f129e699851a6e43935d339d"
-
-[[package]]
-name = "panic-halt"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "de96540e0ebde571dc55c73d60ef407c653844e6f9a1e2fdbd40c07b9252d812"
 
 [[package]]
 name = "plic"
@@ -138,24 +130,12 @@ checksum = "aa3145d2fae3778b1e31ec2e827b228bdc6abd9b74bb5705ba46dcb82069bc4f"
 dependencies = [
  "bit_field",
  "critical-section",
- "embedded-hal 0.2.7",
-]
-
-[[package]]
-name = "riscv"
-version = "0.11.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2f5c1b8bf41ea746266cdee443d1d1e9125c86ce1447e1a2615abd34330d33a9"
-dependencies = [
- "critical-section",
- "embedded-hal 1.0.0",
+ "embedded-hal",
 ]
 
 [[package]]
 name = "riscv-rt-macros"
-version = "0.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a8d100d466dbb76681ef6a9386f3da9abc570d57394e86da0ba5af8c4408486d"
+version = "0.2.0"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -168,19 +148,20 @@ version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8c74c6df5cecd1ddc81f953d100cee1111acd981535526d3e89d2854015cf93b"
 dependencies = [
- "riscv 0.10.1",
- "sbi-spec",
+ "riscv",
+ "sbi-spec 0.0.5",
 ]
 
 [[package]]
 name = "rustsbi-hpm"
 version = "0.1.0"
 dependencies = [
+ "fast-trap",
  "hpm-ral",
  "hpm-rt",
- "panic-halt",
- "riscv 0.11.1",
+ "riscv",
  "rustsbi",
+ "sbi-spec 0.0.7",
  "spin",
 ]
 
@@ -192,6 +173,12 @@ checksum = "a535b1f16d5517a020539569f7e37e61fad35ed0d5352f9fd7073304e2f2dc72"
 dependencies = [
  "static_assertions",
 ]
+
+[[package]]
+name = "sbi-spec"
+version = "0.0.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e6e36312fb5ddc10d08ecdc65187402baba4ac34585cb9d1b78522ae2358d890"
 
 [[package]]
 name = "scopeguard"
