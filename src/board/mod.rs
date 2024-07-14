@@ -1,35 +1,34 @@
 use core::fmt::{self, Write};
 
-use hpm_ral as ral;
+use hpm_metapac as pac;
 
 mod clock;
 mod pin;
 mod uart;
 
-use clock::ClockConfigurator;
-use pin::Gpio;
+use clock::{clocks, ClockConfigurator};
+use pin::PinCtrl;
 use uart::Uart;
 
 use spin::lock_api::Mutex;
 
-pub static UART: Mutex<Option<Uart<0>>> = Mutex::new(None);
+pub static UART: Mutex<Option<Uart>> = Mutex::new(None);
 
 pub fn board_init() {
-    let sysctl = unsafe { ral::sysctl::SYSCTL::instance() };
-    let pllctl = unsafe { ral::pllctl::PLLCTL::instance() };
-    let ioc = unsafe { ral::ioc::IOC0::instance() };
-    let pioc = unsafe { ral::ioc::PIOC10::instance() };
-    let gpio0 = unsafe { ral::gpio::GPIO0::instance() };
-    let uart0 = unsafe { ral::uart::UART0::instance() };
-
+    let sysctl = pac::SYSCTL;
+    let pllctl = pac::PLLCTL;
     let clock = unsafe { ClockConfigurator::new(sysctl, pllctl).freeze() };
-    let gpio = Gpio::new(gpio0, ioc, pioc);
-    let pins = gpio.split();
-    let uart = Uart::new(uart0);
 
+    let gpio0 = pac::GPIO0;
+    let ioc = pac::IOC;
+    let pioc = pac::PIOC;
+    let pinctrl = PinCtrl::new(gpio0, ioc, pioc);
+    let pins = pinctrl.split();
     pins.setup();
 
-    uart.setup(115_200, clock.get_clk_uart0_freq());
+    let uart0 = pac::UART0;
+    let uart = Uart::new(uart0);
+    uart.setup(115_200, clock.get_clk_freq(clocks::URT0));
     *UART.lock() = Some(uart);
 }
 

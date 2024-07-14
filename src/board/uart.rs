@@ -1,60 +1,56 @@
 #![allow(dead_code)]
 
 use core::fmt::Write;
-use core::ops::Deref;
 
-use hpm_ral::uart;
-use hpm_ral::{modify_reg, read_reg, write_reg};
+use super::pac::uart;
 
-pub struct Uart<const N: u8> {
-    inner: uart::Instance<N>,
+pub struct Uart {
+    inner: uart::Uart,
 }
 
-impl<const N: u8> Uart<N> {
-    pub fn new(uart: uart::Instance<N>) -> Self {
+impl Uart {
+    pub fn new(uart: uart::Uart) -> Self {
         Self { inner: uart }
     }
 
     pub fn setup(&self, buadrate: u32, clock_src_freq: u32) {
+        let uart = &self.inner;
+
         // Disable all interrupt
-        write_reg!(uart, self.inner, DLM, 0);
+        uart.dlm().write(|w| w.set_dlm(0));
+
         // Set DLAB to 1
-        modify_reg!(uart, self.inner, LCR, DLAB: 1);
-
+        uart.lcr().modify(|m| m.set_dlab(true));
+        // Calculate baud rate
         let div = clock_src_freq / (buadrate * 16);
-        modify_reg!(uart, self.inner, DLL, DLL: div);
-        modify_reg!(uart, self.inner, DLM, DLM: div >> 8);
-
+        uart.dll().write(|m| m.set_dll(div as u8));
+        uart.dlm().write(|m| m.set_dlm((div >> 8) as u8));
         // Set DLAB to 0
-        modify_reg!(uart, self.inner, LCR, DLAB: 0);
+        uart.lcr().modify(|m| m.set_dlab(false));
+
         // Word length to 8 bits
-        modify_reg!(uart, self.inner, LCR, WLS: Bits8);
-        // Enable TX and RX FIFO and DMA
-        modify_reg!(uart, self.inner, FCR, FIFOE: 1);
+        uart.lcr().modify(|m| m.set_wls(3));
+        // Enable TX and RX FIFO
+        uart.fcr().modify(|m| m.set_fifoe(true))
     }
 
     #[inline]
     fn is_tx_fifo_empty(&self) -> bool {
-        return read_reg!(uart, self.inner, LSR, THRE) == 1;
+        self.inner.lsr().read().thre()
     }
 
     #[inline]
     pub fn send_byte(&self, byte: u8) {
         while !self.is_tx_fifo_empty() {}
-        write_reg!(uart, self.inner, DLL, DLL: byte as u32);
+        self.inner.dll().write(|w| w.set_dll(byte));
     }
 }
 
-impl<const N: u8> Write for Uart<N> {
+impl Write for Uart {
     fn write_str(&mut self, s: &str) -> core::fmt::Result {
-        match self.inner.deref() as *const uart::RegisterBlock {
-            uart::UART0 => {
-                for ch in s.bytes() {
-                    self.send_byte(ch);
-                }
-                Ok(())
-            }
-            _ => Err(core::fmt::Error),
+        for ch in s.bytes() {
+            self.send_byte(ch);
         }
+        Ok(())
     }
 }

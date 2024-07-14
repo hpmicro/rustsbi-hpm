@@ -69,7 +69,7 @@ fn main() -> ! {
         ver_sbi = rustsbi::VERSION,
         logo = rustsbi::LOGO,
         ver_impl = env!("CARGO_PKG_VERSION"),
-        model = "HPM6750EVKMINI",
+        model = "HPM6360EVK",
         firmware = _start as usize,
     );
     // 初始化 PMP
@@ -153,9 +153,6 @@ extern "C" fn fast_handler(
                     *bits |= mstatus::MPIE | mstatus::MPP_SUPERVISOR;
                 });
                 mie::write(mie::MSIE | mie::MTIE);
-                unsafe {
-                    asm!("csrw mcause, {}", in(reg) 0x0);
-                }
                 break boot(ctx, supervisor.start_addr, supervisor.opaque);
             }
             _ => match mcause::read().cause() {

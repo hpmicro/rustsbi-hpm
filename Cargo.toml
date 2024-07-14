@@ -4,18 +4,20 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+hpm-metapac = { version = "0.0.3", git = "https://github.com/hpmicro-rs/hpm-metapac.git", tag = "hpm-data-c9fcffe822d42025324b28640051da8a0afb3cfc", features = [
+    "hpm6360",
+] }
 rustsbi = { version = "0.3.2", features = ["machine"] }
 sbi-spec = { version = "0.0.7", features = ["legacy"] }
-hpm-rt = { path = "../hpm-rt" }
-hpm-ral = { git = "https://github.com/hpm-rs/hpm-ral", version = "0.0.1", features = [
-    "hpm6750",
-] }
+hpm-rt = { git = "https://github.com/hpm-rs/hpm-rt.git", rev = "f595a3e1e188e00804be92a6fd0b406d1c9f3e27" }
+
 riscv = "0.10"
 spin = "0.9"
 fast-trap = { version = "0.0.1", features = ["riscv-m"] }
 
 [build-dependencies]
-hpm-rt = { path = "../hpm-rt" }
+hpm-rt = { git = "https://github.com/hpm-rs/hpm-rt.git", rev = "f595a3e1e188e00804be92a6fd0b406d1c9f3e27" }
 
-[profile.release]
-debug = true
+[features]
+ram = []
+flash = []

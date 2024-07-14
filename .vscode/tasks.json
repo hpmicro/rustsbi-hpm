@@ -5,6 +5,10 @@
             "label": "Cargo build",
             "type": "cargo",
             "command": "build",
+            "args": [
+                "--features",
+                "ram"
+            ],
             "problemMatcher": [
                 "$rustc"
             ],
