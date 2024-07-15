@@ -166,7 +166,7 @@ extern "C" fn fast_handler(
                             {
                                 ret.value = 1;
                             }
-                            _ => {}
+                            _ => unimplemented!(),
                         }
                     } else {
                         match a7 {
@@ -175,10 +175,8 @@ extern "C" fn fast_handler(
                                 ret.error = 0;
                                 ret.value = a1;
                             }
-                            legacy::LEGACY_CONSOLE_GETCHAR => {
-                                // let mut c = 0u8;
-                            }
-                            _ => {}
+                            legacy::LEGACY_CONSOLE_GETCHAR => unimplemented!(),
+                            _ => unimplemented!(),
                         }
                     }
                     ctx.regs().a = [ret.error, ret.value, a2, a3, a4, a5, a6, a7];
@@ -209,7 +207,10 @@ extern "C" fn fast_handler(
 
 #[panic_handler]
 fn panic(info: &core::panic::PanicInfo) -> ! {
-    println!("[rustsbi-panic] hart {} {info}", riscv::register::mhartid::read());
+    println!(
+        "[rustsbi-panic] hart {} {info}",
+        riscv::register::mhartid::read()
+    );
     println!("[rustsbi-panic] system shutdown scheduled due to RustSBI panic");
     loop {}
 }
