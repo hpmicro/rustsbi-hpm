@@ -7,7 +7,7 @@ edition = "2021"
 hpm-metapac = { version = "0.0.3", git = "https://github.com/hpmicro-rs/hpm-metapac.git", tag = "hpm-data-c9fcffe822d42025324b28640051da8a0afb3cfc", features = [
     "hpm6360",
 ] }
-rustsbi = { version = "0.3.2", features = ["machine"] }
+rustsbi = { version = "0.4.0-alpha.3", features = ["machine"] }
 sbi-spec = { version = "0.0.7", features = ["legacy"] }
 hpm-rt = { git = "https://github.com/hpm-rs/hpm-rt.git", rev = "f595a3e1e188e00804be92a6fd0b406d1c9f3e27" }
 

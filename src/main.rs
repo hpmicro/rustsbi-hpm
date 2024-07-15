@@ -19,9 +19,10 @@ mod constants {
 use core::arch::asm;
 
 use fast_trap::{FastContext, FastResult};
+use rustsbi::RustSBI;
 
 use constants::*;
-use extension::sbi;
+use extension::SBI;
 use riscv_spec::*;
 use trap::trap_handler;
 use trap_stack::local_hsm;
@@ -76,8 +77,6 @@ fn main() -> ! {
     set_pmp();
     // 显示 PMP 配置
     pmp::print_pmps();
-    // 初始化 SBI
-    extension::init();
     // 设置陷入栈
     trap_stack::prepare_for_trap();
     // 加载内核
@@ -159,7 +158,7 @@ extern "C" fn fast_handler(
                 // SBI call
                 T::Exception(E::SupervisorEnvCall) => {
                     use sbi_spec::{base, hsm, legacy};
-                    let mut ret = sbi().handle_ecall(a7, a6, [ctx.a0(), a1, a2, a3, a4, a5]);
+                    let mut ret = SBI.handle_ecall(a7, a6, [ctx.a0(), a1, a2, a3, a4, a5]);
                     if ret.is_ok() {
                         match (a7, a6) {
                             // 关闭

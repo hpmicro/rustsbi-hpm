@@ -145,17 +145,18 @@ source = "git+https://github.com/hpm-rs/hpm-rt.git?rev=f595a3e1e188e00804be92a6f
 dependencies = [
  "proc-macro2",
  "quote",
- "syn",
+ "syn 1.0.109",
 ]
 
 [[package]]
 name = "rustsbi"
-version = "0.3.2"
+version = "0.4.0-alpha.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8c74c6df5cecd1ddc81f953d100cee1111acd981535526d3e89d2854015cf93b"
+checksum = "ce47c5c62f6a4d9586b78cc2ba963330bc57a046c4b2949ebc128265707a40c3"
 dependencies = [
- "riscv 0.10.1",
- "sbi-spec 0.0.5",
+ "riscv 0.11.1",
+ "rustsbi-macros",
+ "sbi-spec",
 ]
 
 [[package]]
@@ -167,17 +168,19 @@ dependencies = [
  "hpm-rt",
  "riscv 0.10.1",
  "rustsbi",
- "sbi-spec 0.0.7",
+ "sbi-spec",
  "spin",
 ]
 
 [[package]]
-name = "sbi-spec"
-version = "0.0.5"
+name = "rustsbi-macros"
+version = "0.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a535b1f16d5517a020539569f7e37e61fad35ed0d5352f9fd7073304e2f2dc72"
+checksum = "a71347da9582cc6b6f3652c7d2c06516c9555690b3738ecdff7e84297f4e17fc"
 dependencies = [
- "static_assertions",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.71",
 ]
 
 [[package]]
@@ -202,16 +205,21 @@ dependencies = [
 ]
 
 [[package]]
-name = "static_assertions"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
-
-[[package]]
 name = "syn"
 version = "1.0.109"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "72b64191b275b66ffe2469e8af2c1cfe3bafa67b529ead792a6d0160888b4237"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "unicode-ident",
+]
+
+[[package]]
+name = "syn"
+version = "2.0.71"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b146dcf730474b4bcd16c311627b31ede9ab149045db4d6088b3becaea046462"
 dependencies = [
  "proc-macro2",
  "quote",
