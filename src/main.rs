@@ -35,11 +35,6 @@ struct Supervisor {
     opaque: usize,
 }
 
-#[inline(always)]
-fn hart_id() -> usize {
-    riscv::register::mhartid::read()
-}
-
 fn load_test_kernel() {
     let dst: &mut [u8] =
         unsafe { core::slice::from_raw_parts_mut(SUPERVISOR_ENTRY as *mut u8, TEST_KERNEL.len()) };
@@ -48,29 +43,26 @@ fn load_test_kernel() {
 
 #[hpm_rt::entry]
 fn main() -> ! {
-    extern "C" {
-        fn _start();
-    }
-    let hartid = hart_id();
+    let hartid = riscv::register::mhartid::read();
 
     board::board_init();
 
     // Print startup messages
     print!(
         "\
-[rustsbi] RustSBI version {ver_sbi}, adapting to RISC-V SBI v2.0.0
+[rustsbi] RustSBI version {rustsbi_version}, adapting to RISC-V SBI v2.0.0
 {logo}
-[rustsbi] Implementation     : RustSBI-HPM Version {ver_impl}
+[rustsbi] Implementation     : RustSBI-HPM Version {impl_version}
 [rustsbi] Platform Name      : {model}
 [rustsbi] Boot HART          : {hartid}
-[rustsbi] Firmware Address   : {firmware:#010x}
+[rustsbi] Firmware Address   : {firmware_address:#010x}
 [rustsbi] Supervisor Address : {SUPERVISOR_ENTRY:#010x}
 ",
-        ver_sbi = rustsbi::VERSION,
+        rustsbi_version = rustsbi::VERSION,
         logo = rustsbi::LOGO,
-        ver_impl = env!("CARGO_PKG_VERSION"),
+        impl_version = env!("CARGO_PKG_VERSION"),
         model = "HPM6360EVK",
-        firmware = _start as usize,
+        firmware_address = _start as usize,
     );
     // 初始化 PMP
     set_pmp();
@@ -104,9 +96,6 @@ fn main() -> ! {
 /// 设置 PMP。
 fn set_pmp() {
     use riscv::register::*;
-    extern "C" {
-        fn _start();
-    }
     unsafe {
         // All memory RWX
         pmpcfg0::set_pmp(0, Range::OFF, Permission::NONE, false);
@@ -138,7 +127,7 @@ extern "C" fn fast_handler(
         unsafe {
             sstatus::clear_sie();
         }
-        ctx.regs().a[0] = hart_id();
+        ctx.regs().a[0] = riscv::register::mhartid::read();
         ctx.regs().a[1] = opaque;
         ctx.regs().pc = start_addr;
         ctx.call(2)
@@ -220,7 +209,11 @@ extern "C" fn fast_handler(
 
 #[panic_handler]
 fn panic(info: &core::panic::PanicInfo) -> ! {
-    println!("[rustsbi-panic] hart {} {info}", hart_id());
+    println!("[rustsbi-panic] hart {} {info}", riscv::register::mhartid::read());
     println!("[rustsbi-panic] system shutdown scheduled due to RustSBI panic");
     loop {}
+}
+
+extern "C" {
+    fn _start();
 }
