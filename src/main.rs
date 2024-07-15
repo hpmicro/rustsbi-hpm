@@ -24,7 +24,6 @@ use rustsbi::RustSBI;
 use constants::*;
 use extension::SBI;
 use riscv_spec::*;
-use trap::trap_handler;
 use trap_stack::local_hsm;
 
 const TEST_KERNEL: &'static [u8] = include_bytes!("kernel.bin");
@@ -94,9 +93,9 @@ fn main() -> ! {
         use riscv::register::{medeleg, mtvec};
         medeleg::clear_supervisor_env_call();
         medeleg::clear_machine_env_call();
-        mtvec::write(trap_handler as _, mtvec::TrapMode::Direct);
+        mtvec::write(fast_trap::trap_entry as _, mtvec::TrapMode::Direct);
         asm!("j {trap_handler}",
-            trap_handler = sym trap_handler,
+            trap_handler = sym fast_trap::trap_entry,
             options(noreturn),
         );
     }
