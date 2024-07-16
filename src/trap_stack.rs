@@ -4,7 +4,8 @@ use core::ptr::NonNull;
 
 use fast_trap::{FlowContext, FreeTrapStack};
 
-use crate::{constants::LEN_STACK_PER_HART, fast_handler, Supervisor};
+use crate::trap::fast_handler;
+use crate::{constants::LEN_STACK_PER_HART, Supervisor};
 
 static mut ROOT_STACK: Stack = Stack::ZERO;
 
