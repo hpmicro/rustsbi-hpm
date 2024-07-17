@@ -55,30 +55,50 @@ impl Clocks {
     /// When work in integer mode, the frequency of PLL is:
     ///
     /// $$F_{vco} = F_{ref} \times (MFI + (MFN \div MFD))$$
-    pub fn get_pll_freq(&self, pll: ClockMux) -> u32 {
-        const PLL_START: usize = ClockMux::PLL0CLK0 as usize;
-        const PLL_END: usize = ClockMux::PLL2CLK0 as usize;
+    pub fn get_pll_freq(&self, pll: usize) -> u32 {
+        assert!(pll <= 2);
+        let r = self.pllctl.pll(pll);
+        let mfi = r.mfi().read().mfi() as f64;
+        let mfn = r.mfn().read().mfn() as f64 / 10.0;
+        let mfd = r.mfd().read().mfd() as f64 / 10.0;
 
-        let pll = pll as usize;
-        assert!(PLL_START <= pll && pll <= PLL_END);
-
-        let r = self.pllctl.pll(pll - PLL_START);
-        let mfi = r.mfi().read().mfi() as f32;
-        let mfn = r.mfn().read().mfn() as f32;
-        let mfd = r.mfd().read().mfd() as f32;
-
-        XTAL24M_FREQ * (mfi + (mfn / mfd)) as u32
+        let _freq = ((XTAL24M_FREQ as f64) * (mfi + (mfn / mfd))) as u32;
+        _freq
     }
 
     pub fn get_clk_src_freq(&self, src: ClockMux) -> u32 {
         match src {
             ClockMux::CLK_24M => XTAL24M_FREQ,
-            (ClockMux::PLL0CLK0
-            | ClockMux::PLL0CLK1
-            | ClockMux::PLL0CLK2
-            | ClockMux::PLL1CLK0
-            | ClockMux::PLL1CLK1
-            | ClockMux::PLL2CLK0) => self.get_pll_freq(src),
+            (ClockMux::PLL0CLK0 | ClockMux::PLL0CLK1 | ClockMux::PLL0CLK2) => {
+                let freq = self.get_pll_freq(0) as f64;
+                let div = self
+                    .pllctl
+                    .pll(0)
+                    .div(src as usize - ClockMux::PLL0CLK0 as usize)
+                    .read()
+                    .div() as f64;
+                (freq / (1.0 + 0.2 * div)) as _
+            }
+            (ClockMux::PLL1CLK0 | ClockMux::PLL1CLK1) => {
+                let freq = self.get_pll_freq(0) as f64;
+                let div = self
+                    .pllctl
+                    .pll(1)
+                    .div(src as usize - ClockMux::PLL1CLK0 as usize)
+                    .read()
+                    .div() as f64;
+                (freq / (1.0 + 0.2 * div)) as _
+            }
+            (ClockMux::PLL2CLK0 | ClockMux::PLL2CLK1) => {
+                let freq = self.get_pll_freq(0) as f64;
+                let div = self
+                    .pllctl
+                    .pll(2)
+                    .div(src as usize - ClockMux::PLL2CLK0 as usize)
+                    .read()
+                    .div() as f64;
+                (freq / (1.0 + 0.2 * div)) as _
+            }
             _ => unimplemented!(),
         }
     }
