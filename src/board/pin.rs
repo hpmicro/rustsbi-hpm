@@ -244,7 +244,48 @@ macro_rules! pins {
 
 pins!(
     'A': [
-        (PA07, led, 7, 0),
+        (PA07, led,       7,  0),
+        (PA25, sdram_0,  25, 12),
+        (PA26, sdram_1,  26, 12),
+        (PA27, sdram_2,  27, 12),
+        (PA28, sdram_3,  28, 12),
+        (PA29, sdram_4,  29, 12),
+        (PA30, sdram_5,  30, 12),
+        (PA31, sdram_6,  31, 12),
+    ],
+    'B': [
+        (PB00, sdram_7,   0, 12),
+        (PB01, sdram_8,   1, 12),
+        (PB02, sdram_9,   2, 12),
+        (PB03, sdram_10,  3, 12),
+        (PB04, sdram_11,  4, 12),
+        (PB05, sdram_12,  5, 12),
+        (PB06, sdram_13,  6, 12),
+        (PB07, sdram_14,  7, 12),
+        (PB08, sdram_15,  8, 12),
+        (PB09, sdram_16,  9, 12),
+        (PB10, sdram_17, 10, 12),
+        (PB11, sdram_18, 11, 12),
+        (PB12, sdram_19, 12, 12),
+        (PB13, sdram_20, 13, 12),
+        (PB14, sdram_21, 14, 12),
+        (PB15, sdram_22, 15, 12),
+        (PB16, sdram_23, 16, 12),
+        (PB17, sdram_24, 17, 12),
+        (PB18, sdram_25, 18, 12),
+        (PB19, sdram_26, 19, 12),
+        (PB20, sdram_27, 20, 12),
+        (PB21, sdram_28, 21, 12),
+        (PB22, sdram_29, 22, 12),
+        (PB23, sdram_30, 23, 12),
+        (PB24, sdram_31, 24, 12),
+        (PB25, sdram_32, 25, 12),
+        (PB26, sdram_33, 26, 12),
+        (PB27, sdram_34, 27, 12),
+        (PB28, sdram_35, 28, 12),
+        (PB29, sdram_36, 29, 12),
+        (PB30, sdram_37, 30, 12),
+        (PB31, sdram_38, 31, 12),
     ],
     'Y': [
         (PY06, uart0_tx, 6, 2),
@@ -259,5 +300,45 @@ impl<'a> Pins<'a> {
         // Setup UART0 pinmux
         self.uart0_tx.set_mode_alternate();
         self.uart0_rx.set_mode_alternate();
+        // Setup SDRAM pinmux
+        self.sdram_0.set_mode_alternate();
+        self.sdram_1.set_mode_alternate();
+        self.sdram_2.set_mode_alternate();
+        self.sdram_3.set_mode_alternate();
+        self.sdram_4.set_mode_alternate();
+        self.sdram_5.set_mode_alternate();
+        self.sdram_6.set_mode_alternate();
+        self.sdram_7.set_mode_alternate();
+        self.sdram_8.set_mode_alternate();
+        self.sdram_9.set_mode_alternate();
+        self.sdram_10.set_mode_alternate();
+        self.sdram_11.set_mode_alternate();
+        self.sdram_12.set_mode_alternate();
+        self.sdram_13.set_mode_alternate();
+        self.sdram_14.set_mode_alternate();
+        self.sdram_15.set_mode_alternate();
+        self.sdram_16.set_mode_alternate();
+        self.sdram_17.set_mode_alternate();
+        self.sdram_18.set_mode_alternate();
+        self.sdram_19.set_mode_alternate();
+        self.sdram_20.set_mode_alternate();
+        self.sdram_21.set_mode_alternate();
+        self.sdram_22.set_mode_alternate();
+        self.sdram_23.set_mode_alternate();
+        self.sdram_24.set_mode_alternate();
+        self.sdram_25.set_mode_alternate();
+        self.sdram_26.set_mode_alternate();
+        self.sdram_27.set_mode_alternate();
+        self.sdram_28.set_mode_alternate();
+        self.sdram_29.set_mode_alternate();
+        self.sdram_30.set_mode_alternate();
+        self.sdram_31.set_mode_alternate();
+        self.sdram_32.set_mode_alternate();
+        self.sdram_33.set_mode_alternate();
+        self.sdram_34.set_mode_alternate();
+        self.sdram_35.set_mode_alternate();
+        self.sdram_36.set_mode_alternate();
+        self.sdram_37.set_mode_alternate();
+        self.sdram_38.set_mode_alternate();
     }
 }

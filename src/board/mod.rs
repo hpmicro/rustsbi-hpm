@@ -1,18 +1,35 @@
 use core::fmt::{self, Write};
 
 use hpm_metapac as pac;
+use spin::lock_api::Mutex;
 
 mod clock;
+mod femc;
 mod pin;
 mod uart;
 
 use clock::{clocks, ClockConfigurator};
+use femc::Sdram;
 use pin::PinCtrl;
 use uart::Uart;
 
-use spin::lock_api::Mutex;
-
 pub static UART: Mutex<Option<Uart>> = Mutex::new(None);
+
+#[macro_export]
+macro_rules! print {
+    ($fmt: literal $(, $($args: tt)+)?) => {
+        $crate::board::_print(format_args!($fmt $(, $($args)+)?));
+    };
+}
+
+#[macro_export]
+macro_rules! println {
+    () => ($crate::print!("\n"));
+    ($($arg:tt)*) => {{
+        $crate::board::_print(core::format_args!($($arg)*));
+        $crate::println!();
+    }}
+}
 
 pub fn board_init() {
     let sysctl = pac::SYSCTL;
@@ -30,6 +47,18 @@ pub fn board_init() {
     let uart = Uart::new(uart0);
     uart.setup(115_200, clock.get_clk_freq(clocks::URT0));
     *UART.lock() = Some(uart);
+
+    let sdram_clock_freq = clock.get_clk_freq(clocks::FEMC);
+    println!(
+        "[rustsbi pre-init] SDRAM clock frequency: {}Hz",
+        sdram_clock_freq
+    );
+
+    let sdram = Sdram::new(pac::FEMC).config();
+    println!(
+        "[rustsbi pre-init] SDRAM base address: {:#010x}",
+        sdram.base_address()
+    );
 }
 
 #[inline]
@@ -37,20 +66,4 @@ pub fn _print(args: fmt::Arguments) {
     let mut guard = UART.lock();
 
     guard.as_mut().unwrap().write_fmt(args).unwrap();
-}
-
-#[macro_export]
-macro_rules! print {
-    ($fmt: literal $(, $($args: tt)+)?) => {
-        $crate::board::_print(format_args!($fmt $(, $($args)+)?));
-    };
-}
-
-#[macro_export]
-macro_rules! println {
-    () => ($crate::print!("\n"));
-    ($($arg:tt)*) => {{
-        $crate::board::_print(core::format_args!($($arg)*));
-        $crate::println!();
-    }}
 }
