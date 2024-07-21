@@ -116,4 +116,11 @@ impl Clocks {
         let div = r.div() as u32;
         self.get_clk_src_freq(src) / (div + 1)
     }
+
+    pub fn get_cpu0_clk_freq(&self) -> u32 {
+        let r = self.sysctl.clock_cpu(0).read();
+        let src = r.mux();
+        let div = r.div() as u32;
+        self.get_clk_src_freq(src) / (div + 1)
+    }
 }

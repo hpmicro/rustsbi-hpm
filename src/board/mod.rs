@@ -48,15 +48,16 @@ pub fn board_init() {
     uart.setup(115_200, clock.get_clk_freq(clocks::URT0));
     *UART.lock() = Some(uart);
 
+    let cpu0_clock_freq = clock.get_cpu0_clk_freq();
     let sdram_clock_freq = clock.get_clk_freq(clocks::FEMC);
-    println!(
-        "[rustsbi pre-init] SDRAM clock frequency: {}Hz",
-        sdram_clock_freq
-    );
-
     let sdram = Sdram::new(pac::FEMC).config();
     println!(
-        "[rustsbi pre-init] SDRAM base address: {:#010x}",
+        "\
+[rustsbi pre-init] CPU0 clock frequency  : {}Hz
+[rustsbi pre-init] SDRAM clock frequency : {}Hz
+[rustsbi pre-init] SDRAM base address    : {:#010x}",
+        cpu0_clock_freq,
+        sdram_clock_freq,
         sdram.base_address()
     );
 }
