@@ -32,6 +32,8 @@ macro_rules! println {
 }
 
 pub fn board_init() {
+    hpm_rt::cache::icache_enable();
+
     let sysctl = pac::SYSCTL;
     let pllctl = pac::PLLCTL;
     let clock = unsafe { ClockConfigurator::new(sysctl, pllctl).freeze() };
