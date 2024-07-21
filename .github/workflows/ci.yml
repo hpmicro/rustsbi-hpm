@@ -1,0 +1,16 @@
+on:
+  push:
+    branches: [ main, 'dev/*' ]
+  pull_request:
+
+name: Build
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.experimental || false }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run cargo check
+        run: cargo check
