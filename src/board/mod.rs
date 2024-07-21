@@ -47,7 +47,7 @@ pub fn board_init() {
 
     let uart0 = pac::UART0;
     let uart = Uart::new(uart0);
-    uart.setup(115_200, clock.get_clk_freq(clocks::URT0));
+    uart.setup(250_000, clock.get_clk_freq(clocks::URT0));
     *UART.lock() = Some(uart);
 
     let cpu0_clock_freq = clock.get_cpu0_clk_freq();
