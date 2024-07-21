@@ -5,13 +5,16 @@
 
 mod board;
 mod extension;
+mod loader;
 mod pmp;
 mod riscv_spec;
 mod trap;
 mod trap_stack;
 mod constants {
     /// 特权软件入口。
-    pub(crate) const SUPERVISOR_ENTRY: usize = 0x0108_0000;
+    pub(crate) const SUPERVISOR_ENTRY: usize = 0x4000_0000;
+    /// 设备树加载地址。
+    pub(crate) const DTB_LOAD_ADDRESS: usize = 0x4020_0000;
     /// 每个硬件线程设置 16KiB 栈空间。
     pub(crate) const LEN_STACK_PER_HART: usize = 16 * 1024;
 }
@@ -21,19 +24,11 @@ use core::arch::asm;
 use constants::*;
 use trap_stack::local_hsm;
 
-const TEST_KERNEL: &'static [u8] = include_bytes!("kernel.bin");
-
 /// 特权软件信息。
 #[derive(Debug)]
 struct Supervisor {
     start_addr: usize,
     opaque: usize,
-}
-
-fn load_test_kernel() {
-    let dst: &mut [u8] =
-        unsafe { core::slice::from_raw_parts_mut(SUPERVISOR_ENTRY as *mut u8, TEST_KERNEL.len()) };
-    dst.copy_from_slice(TEST_KERNEL);
 }
 
 #[hpm_rt::entry]
@@ -65,14 +60,19 @@ fn main() -> ! {
     pmp::print_pmps();
     // 设置陷入栈
     trap_stack::prepare_for_trap();
-    // 加载内核
-    load_test_kernel();
+    unsafe {
+        // 加载内核
+        loader::load_test_kernel();
+        // 加载设备树
+        loader::load_dtb()
+    };
     // 设置内核入口
     local_hsm().prepare(Supervisor {
         start_addr: SUPERVISOR_ENTRY,
-        opaque: Default::default(),
+        opaque: DTB_LOAD_ADDRESS,
     });
     // 准备启动调度
+    println!("\nStarting kernel ...\n");
     unsafe {
         asm!("csrw mideleg,    {}", in(reg) !0);
         asm!("csrw medeleg,    {}", in(reg) !0);
