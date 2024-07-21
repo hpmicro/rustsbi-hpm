@@ -60,12 +60,21 @@ dependencies = [
 [[package]]
 name = "hpm-rt"
 version = "0.1.0"
-source = "git+https://github.com/hpm-rs/hpm-rt.git?rev=f595a3e1e188e00804be92a6fd0b406d1c9f3e27#f595a3e1e188e00804be92a6fd0b406d1c9f3e27"
+source = "git+https://github.com/hpm-rs/hpm-rt.git?rev=9957249237231dea1396cf2d696f08ed71451299#9957249237231dea1396cf2d696f08ed71451299"
 dependencies = [
  "cfg-if",
  "r0",
  "riscv 0.10.1",
  "riscv-rt-macros",
+]
+
+[[package]]
+name = "lazy_static"
+version = "1.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bbd2bcb4c963f2ddae06a2efc7e9f3591312473c50c6685e1f298068316e66fe"
+dependencies = [
+ "spin",
 ]
 
 [[package]]
@@ -139,9 +148,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "riscv-decode"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bec7a6dc0b0bb96a4d23271864a45c0d24dcd9dde2a1b630a35f79fa29c588bf"
+
+[[package]]
 name = "riscv-rt-macros"
 version = "0.2.0"
-source = "git+https://github.com/hpm-rs/hpm-rt.git?rev=f595a3e1e188e00804be92a6fd0b406d1c9f3e27#f595a3e1e188e00804be92a6fd0b406d1c9f3e27"
+source = "git+https://github.com/hpm-rs/hpm-rt.git?rev=9957249237231dea1396cf2d696f08ed71451299#9957249237231dea1396cf2d696f08ed71451299"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -166,7 +181,9 @@ dependencies = [
  "fast-trap",
  "hpm-metapac",
  "hpm-rt",
+ "lazy_static",
  "riscv 0.10.1",
+ "riscv-decode",
  "rustsbi",
  "sbi-spec",
  "spin",

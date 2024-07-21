@@ -36,6 +36,11 @@ impl ClockConfigurator {
         self.link_to_group(resources::URT0);
         self.link_to_group(resources::FEMC);
 
+        self.sysctl.clock(clocks::MCT0).modify(|w| {
+            w.set_mux(sysctl::vals::ClockMux::CLK_24M);
+            w.set_div(23);
+        });
+
         self.sysctl.clock(clocks::URT0).modify(|w| {
             w.set_mux(sysctl::vals::ClockMux::CLK_24M);
             w.set_div(0);

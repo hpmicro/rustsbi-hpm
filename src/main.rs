@@ -3,6 +3,9 @@
 #![feature(naked_functions, asm_const)]
 #![deny(warnings)]
 
+#[macro_use]
+extern crate lazy_static;
+
 mod board;
 mod extension;
 mod loader;
@@ -20,8 +23,10 @@ mod constants {
 }
 
 use core::arch::asm;
+use riscv::register::{mcause, mtval};
 
 use constants::*;
+use riscv_spec::*;
 use trap_stack::local_hsm;
 
 /// 特权软件信息。
@@ -79,6 +84,7 @@ fn main() -> ! {
         asm!("csrw mcounteren, {}", in(reg) !0);
         use riscv::register::{medeleg, mtvec};
         medeleg::clear_supervisor_env_call();
+        medeleg::clear_illegal_instruction();
         medeleg::clear_machine_env_call();
         mtvec::write(fast_trap::trap_entry as _, mtvec::TrapMode::Direct);
         asm!("j {trap_handler}",
@@ -92,13 +98,11 @@ fn main() -> ! {
 fn set_pmp() {
     use riscv::register::*;
     unsafe {
-        // All memory RWX
+        // 1. SDRAM
         pmpcfg0::set_pmp(0, Range::OFF, Permission::NONE, false);
-        pmpaddr0::write((_start as usize) >> 2);
-        pmpcfg0::set_pmp(1, Range::TOR, Permission::NONE, false);
-        pmpaddr1::write((0x01080000) >> 2);
-        pmpcfg0::set_pmp(2, Range::TOR, Permission::RWX, false);
-        pmpaddr2::write((0x01100000) >> 2);
+        pmpaddr0::write((0x4000_0000) >> 2);
+        pmpcfg0::set_pmp(1, Range::TOR, Permission::RWX, false);
+        pmpaddr1::write((0x4200_0000) >> 2);
     }
 }
 
@@ -107,6 +111,18 @@ fn panic(info: &core::panic::PanicInfo) -> ! {
     println!(
         "[rustsbi-panic] hart {} {info}",
         riscv::register::mhartid::read()
+    );
+    println!(
+        "-----------------------------
+> mcause:  {:?}
+> mstatus: {:#018x}
+> mepc:    {:#018x}
+> mtval:   {:#018x}
+-----------------------------",
+        mcause::read().cause(),
+        mstatus::read(),
+        mepc::read(),
+        mtval::read()
     );
     println!("[rustsbi-panic] system shutdown scheduled due to RustSBI panic");
     loop {}

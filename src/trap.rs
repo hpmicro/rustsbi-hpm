@@ -1,11 +1,71 @@
 use fast_trap::{FastContext, FastResult};
+use riscv::register::{
+    mcause::{self, Exception as E, Interrupt as I, Trap as T},
+    mip, mtval, scause, sepc, sstatus, stval, stvec,
+};
 use rustsbi::RustSBI;
 
 use crate::extension::SBI;
 use crate::local_hsm;
+use crate::print;
 use crate::riscv_spec::*;
-use crate::{print, println};
 
+#[inline]
+fn boot(mut ctx: FastContext, start_addr: usize, opaque: usize) -> FastResult {
+    unsafe {
+        sstatus::clear_sie();
+    }
+
+    ctx.regs().a[0] = riscv::register::mhartid::read();
+    ctx.regs().a[1] = opaque;
+    ctx.regs().pc = start_addr;
+    ctx.call(2)
+}
+
+#[inline]
+fn delegate(ctx: &mut FastContext) {
+    unsafe {
+        sepc::write(ctx.regs().pc);
+        scause::write(mcause::read().bits());
+        stval::write(mtval::read());
+        sstatus::clear_sie();
+        mepc::write(stvec::read().address());
+    }
+}
+
+#[inline]
+fn illegal_instruction_handler(ctx: &mut FastContext) -> bool {
+    use riscv_decode::{decode, Instruction};
+
+    let inst = decode(mtval::read() as u32);
+    match inst {
+        Ok(Instruction::Csrrs(csr)) => match csr.csr() {
+            CSR_TIME => {
+                assert!(
+                    10 <= csr.rd() && csr.rd() <= 17,
+                    "Unsupported CSR rd: {}",
+                    csr.rd()
+                );
+                ctx.regs().a[(csr.rd() - 10) as usize] = SBI.timer.time() as usize;
+            }
+            CSR_TIMEH => {
+                assert!(
+                    10 <= csr.rd() && csr.rd() <= 17,
+                    "Unsupported CSR rd: {}",
+                    csr.rd()
+                );
+                ctx.regs().a[(csr.rd() - 10) as usize] = SBI.timer.timeh() as usize;
+            }
+            _ => return false,
+        },
+        _ => return false,
+    }
+    mepc::next();
+    true
+}
+
+#[no_mangle]
+#[link_section = ".trap"]
 pub extern "C" fn fast_handler(
     mut ctx: FastContext,
     a1: usize,
@@ -16,22 +76,6 @@ pub extern "C" fn fast_handler(
     a6: usize,
     a7: usize,
 ) -> FastResult {
-    use riscv::register::{
-        mcause::{self, Exception as E, Trap as T},
-        mtval, sstatus,
-    };
-
-    #[inline]
-    fn boot(mut ctx: FastContext, start_addr: usize, opaque: usize) -> FastResult {
-        unsafe {
-            sstatus::clear_sie();
-        }
-        ctx.regs().a[0] = riscv::register::mhartid::read();
-        ctx.regs().a[1] = opaque;
-        ctx.regs().pc = start_addr;
-        ctx.call(2)
-    }
-
     loop {
         match local_hsm().start() {
             Ok(supervisor) => {
@@ -66,7 +110,7 @@ pub extern "C" fn fast_handler(
                             {
                                 ret.value = 1;
                             }
-                            _ => unimplemented!(),
+                            _ => (),
                         }
                     } else {
                         match a7 {
@@ -76,126 +120,41 @@ pub extern "C" fn fast_handler(
                                 ret.value = a1;
                             }
                             legacy::LEGACY_CONSOLE_GETCHAR => unimplemented!(),
-                            _ => unimplemented!(),
+                            _ => unimplemented!(
+                                "EID: {:#010x} FID: {:#010x} is not implemented!",
+                                a7,
+                                a6
+                            ),
                         }
                     }
                     ctx.regs().a = [ret.error, ret.value, a2, a3, a4, a5, a6, a7];
                     mepc::next();
                     break ctx.restore();
                 }
+                T::Exception(E::IllegalInstruction) => {
+                    if mstatus::read() & mstatus::MPP != mstatus::MPP_SUPERVISOR {
+                        panic!("only can handle illegal instruction exception from S-MODE");
+                    }
+
+                    ctx.regs().a = [ctx.a0(), a1, a2, a3, a4, a5, a6, a7];
+                    if !illegal_instruction_handler(&mut ctx) {
+                        delegate(&mut ctx);
+                    }
+                    break ctx.restore();
+                }
+                T::Interrupt(I::MachineTimer) => {
+                    ctx.regs().a = [ctx.a0(), a1, a2, a3, a4, a5, a6, a7];
+                    SBI.timer.set_timecmp(u64::MAX);
+                    unsafe {
+                        mip::set_stimer();
+                    }
+                    break ctx.restore();
+                }
                 // 其他陷入
                 trap => {
-                    println!(
-                        "
------------------------------
-> trap:    {trap:?}
-> mstatus: {:#018x}
-> mepc:    {:#018x}
-> mtval:   {:#018x}
------------------------------
-            ",
-                        mstatus::read(),
-                        mepc::read(),
-                        mtval::read()
-                    );
-                    panic!("stopped with unsupported trap")
+                    panic!("stopped with unsupported {trap:?}")
                 }
             },
         }
     }
 }
-
-// machine timer 中断代理
-//
-// # Safety
-//
-// 裸函数。
-// #[naked]
-// unsafe extern "C" fn mtimer() {
-//     asm!(
-//         // 换栈：
-//         // sp      : M sp
-//         // mscratch: S sp
-//         "   csrrw sp, mscratch, sp",
-//         // 保护
-//         "   addi  sp, sp, -4*8
-//             sd    ra, 0*8(sp)
-//             sd    a0, 1*8(sp)
-//             sd    a1, 2*8(sp)
-//             sd    a2, 3*8(sp)
-//         ",
-//         // 清除 mtimecmp
-//         "   la    a0, {clint_ptr}
-//             ld    a0, (a0)
-//             csrr  a1, mhartid
-//             addi  a2, zero, -1
-//             call  {set_mtimecmp}
-//         ",
-//         // 设置 stip
-//         "   li    a0, {mip_stip}
-//             csrrs zero, mip, a0
-//         ",
-//         // 恢复
-//         "   ld    ra, 0*8(sp)
-//             ld    a0, 1*8(sp)
-//             ld    a1, 2*8(sp)
-//             ld    a2, 3*8(sp)
-//             addi  sp, sp,  4*8
-//         ",
-//         // 换栈：
-//         // sp      : S sp
-//         // mscratch: M sp
-//         "   csrrw sp, mscratch, sp",
-//         // 返回
-//         "   mret",
-//         mip_stip     = const (1 << 5),
-//         clint_ptr    =   sym CLINT,
-//         //                   Clint::write_mtimecmp_naked(&self, hart_idx, val)
-//         set_mtimecmp =   sym Clint::write_mtimecmp_naked,
-//         options(noreturn)
-//     )
-// }
-
-// machine soft 中断代理
-//
-// # Safety
-//
-// 裸函数。
-// #[naked]
-// unsafe extern "C" fn msoft() {
-//     asm!(
-//         // 换栈：
-//         // sp      : M sp
-//         // mscratch: S sp
-//         "   csrrw sp, mscratch, sp",
-//         // 保护
-//         "   addi sp, sp, -3*8
-//             sd   ra, 0*8(sp)
-//             sd   a0, 1*8(sp)
-//             sd   a1, 2*8(sp)
-//         ",
-//         // 清除 msip 设置 ssip
-//         "   la   a0, {clint_ptr}
-//             ld   a0, (a0)
-//             csrr a1, mhartid
-//             call {clear_msip}
-//             csrrsi zero, mip, 1 << 1
-//         ",
-//         // 恢复
-//         "   ld   ra, 0*8(sp)
-//             ld   a0, 1*8(sp)
-//             ld   a1, 2*8(sp)
-//             addi sp, sp,  3*8
-//         ",
-//         // 换栈：
-//         // sp      : S sp
-//         // mscratch: M sp
-//         "   csrrw sp, mscratch, sp",
-//         // 返回
-//         "   mret",
-//         clint_ptr  = sym CLINT,
-//         //               Clint::clear_msip_naked(&self, hart_idx)
-//         clear_msip = sym Clint::clear_msip_naked,
-//         options(noreturn)
-//     )
-// }

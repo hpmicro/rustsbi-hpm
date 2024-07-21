@@ -1,5 +1,8 @@
 ﻿#![allow(unused, missing_docs)]
 
+pub const CSR_TIME: u32 = 0xc01;
+pub const CSR_TIMEH: u32 = 0xc81;
+
 pub mod mie {
     use core::arch::asm;
 

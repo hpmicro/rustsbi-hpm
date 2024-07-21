@@ -1,19 +1,25 @@
-use core::fmt::{self, Write};
+use core::{
+    fmt::{self, Write},
+    mem::MaybeUninit,
+};
 
 use hpm_metapac as pac;
+use hpm_rt;
 use spin::lock_api::Mutex;
 
 mod clock;
 mod femc;
+mod mchtmr;
 mod pin;
 mod uart;
 
 use clock::{clocks, ClockConfigurator};
 use femc::Sdram;
+pub use mchtmr::MachineTimer;
 use pin::PinCtrl;
 use uart::Uart;
 
-pub static UART: Mutex<Option<Uart>> = Mutex::new(None);
+static UART: Mutex<MaybeUninit<Uart>> = Mutex::new(MaybeUninit::uninit());
 
 #[macro_export]
 macro_rules! print {
@@ -34,31 +40,28 @@ macro_rules! println {
 pub fn board_init() {
     hpm_rt::cache::icache_enable();
 
-    let sysctl = pac::SYSCTL;
-    let pllctl = pac::PLLCTL;
-    let clock = unsafe { ClockConfigurator::new(sysctl, pllctl).freeze() };
+    let clock = unsafe { ClockConfigurator::new(pac::SYSCTL, pac::PLLCTL).freeze() };
 
-    let gpio0 = pac::GPIO0;
-    let ioc = pac::IOC;
-    let pioc = pac::PIOC;
-    let pinctrl = PinCtrl::new(gpio0, ioc, pioc);
+    let pinctrl = PinCtrl::new(pac::GPIO0, pac::IOC, pac::PIOC);
     let pins = pinctrl.split();
     pins.setup();
 
-    let uart0 = pac::UART0;
-    let uart = Uart::new(uart0);
+    let uart = Uart::new(pac::UART0);
     uart.setup(250_000, clock.get_clk_freq(clocks::URT0));
-    *UART.lock() = Some(uart);
+    *UART.lock() = MaybeUninit::new(uart);
 
     let cpu0_clock_freq = clock.get_cpu0_clk_freq();
+    let mchtmr_clock_freq = clock.get_clk_freq(clocks::MCT0);
     let sdram_clock_freq = clock.get_clk_freq(clocks::FEMC);
     let sdram = Sdram::new(pac::FEMC).config();
     println!(
         "\
 [rustsbi pre-init] CPU0 clock frequency  : {}Hz
+[rustsbi pre-init] MCHTMT clock frequency  : {}Hz
 [rustsbi pre-init] SDRAM clock frequency : {}Hz
 [rustsbi pre-init] SDRAM base address    : {:#010x}",
         cpu0_clock_freq,
+        mchtmr_clock_freq,
         sdram_clock_freq,
         sdram.base_address()
     );
@@ -68,5 +71,9 @@ pub fn board_init() {
 pub fn _print(args: fmt::Arguments) {
     let mut guard = UART.lock();
 
-    guard.as_mut().unwrap().write_fmt(args).unwrap();
+    unsafe { guard.assume_init_mut().write_fmt(args).unwrap() }
+}
+
+pub fn board_init_timer() -> MachineTimer {
+    MachineTimer::new(pac::MCHTMR)
 }

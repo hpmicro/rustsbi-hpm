@@ -1,16 +1,17 @@
 use rustsbi::RustSBI;
 
+use crate::board::{board_init_timer, MachineTimer};
+
 #[derive(RustSBI)]
 pub struct FixedRustSBI {
-    // todo: timer: Option<HpmTimer>,
-    // todo: reset: Option<HpmReset>,
+    #[rustsbi(timer)]
+    pub timer: MachineTimer,
 }
 
-pub static SBI: FixedRustSBI = FixedRustSBI {
-    // todo contents
-};
-
-// todo: struct HpmTimer
-// todo: impl rustsbi::Timer for HpmTimer
-
-// todo: other extensions...
+lazy_static! {
+    pub static ref SBI: FixedRustSBI = {
+        FixedRustSBI {
+            timer: board_init_timer(),
+        }
+    };
+}
