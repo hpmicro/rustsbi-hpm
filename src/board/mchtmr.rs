@@ -1,5 +1,6 @@
 #![allow(unused)]
 
+use riscv::register::mip;
 use rustsbi::Timer;
 
 use super::pac::mchtmr::Mchtmr;
@@ -32,6 +33,7 @@ impl MachineTimer {
     #[inline(always)]
     pub fn set_timecmp(&self, timecmp: u64) {
         self.inner.mtimecmp().write(|w| *w = timecmp);
+        unsafe { mip::clear_stimer() }
     }
 }
 
