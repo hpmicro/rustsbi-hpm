@@ -40,9 +40,24 @@ impl Uart {
     }
 
     #[inline]
+    fn is_data_ready(&self) -> bool {
+        self.inner.lsr().read().dr()
+    }
+
+    #[inline]
     pub fn send_byte(&self, byte: u8) {
         while !self.is_tx_fifo_empty() {}
         self.inner.dll().write(|w| w.set_dll(byte));
+    }
+
+    #[inline]
+    pub fn receive_byte(&self, byte: &mut u8) -> bool {
+        if self.is_data_ready() {
+            *byte = self.inner.rbr().read().rbr();
+            true
+        } else {
+            false
+        }
     }
 }
 

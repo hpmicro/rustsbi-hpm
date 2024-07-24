@@ -5,6 +5,7 @@ use riscv::register::{
 };
 use rustsbi::RustSBI;
 
+use crate::board;
 use crate::extension::SBI;
 use crate::local_hsm;
 use crate::print;
@@ -128,7 +129,10 @@ pub extern "C" fn fast_handler(
                                 ret.error = 0;
                                 ret.value = a1;
                             }
-                            legacy::LEGACY_CONSOLE_GETCHAR => unimplemented!(),
+                            legacy::LEGACY_CONSOLE_GETCHAR => {
+                                ret.error = board::getchar();
+                                ret.value = a1;
+                            }
                             _ => unimplemented!(
                                 "EID: {:#010x} FID: {:#010x} is not implemented!",
                                 a7,

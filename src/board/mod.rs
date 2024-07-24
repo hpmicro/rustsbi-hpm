@@ -24,7 +24,7 @@ static UART: Mutex<MaybeUninit<Uart>> = Mutex::new(MaybeUninit::uninit());
 #[macro_export]
 macro_rules! print {
     ($fmt: literal $(, $($args: tt)+)?) => {
-        $crate::board::_print(format_args!($fmt $(, $($args)+)?));
+        $crate::board::putchar(format_args!($fmt $(, $($args)+)?));
     };
 }
 
@@ -32,7 +32,7 @@ macro_rules! print {
 macro_rules! println {
     () => ($crate::print!("\n"));
     ($($arg:tt)*) => {{
-        $crate::board::_print(core::format_args!($($arg)*));
+        $crate::board::putchar(core::format_args!($($arg)*));
         $crate::println!();
     }}
 }
@@ -47,7 +47,7 @@ pub fn board_init() {
     pins.setup();
 
     let uart = Uart::new(pac::UART0);
-    uart.setup(250_000, clock.get_clk_freq(clocks::URT0));
+    uart.setup(115_200, clock.get_clk_freq(clocks::URT0));
     *UART.lock() = MaybeUninit::new(uart);
 
     let cpu0_clock_freq = clock.get_cpu0_clk_freq();
@@ -68,10 +68,24 @@ pub fn board_init() {
 }
 
 #[inline]
-pub fn _print(args: fmt::Arguments) {
+pub fn putchar(args: fmt::Arguments) {
     let mut guard = UART.lock();
 
     unsafe { guard.assume_init_mut().write_fmt(args).unwrap() }
+}
+
+#[inline]
+pub fn getchar() -> usize {
+    let mut guard = UART.lock();
+    let mut c: u8 = 0;
+
+    unsafe {
+        if guard.assume_init_mut().receive_byte(&mut c) {
+            c as _
+        } else {
+            usize::MAX
+        }
+    }
 }
 
 pub fn board_init_timer() -> MachineTimer {
