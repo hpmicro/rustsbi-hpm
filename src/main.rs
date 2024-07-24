@@ -17,7 +17,7 @@ mod constants {
     /// 特权软件入口。
     pub(crate) const SUPERVISOR_ENTRY: usize = 0x4000_0000;
     /// 设备树加载地址。
-    pub(crate) const DTB_LOAD_ADDRESS: usize = 0x4020_0000;
+    pub(crate) const DTB_LOAD_ADDRESS: usize = 0x4024_0000;
     /// 每个硬件线程设置 16KiB 栈空间。
     pub(crate) const LEN_STACK_PER_HART: usize = 16 * 1024;
 }
