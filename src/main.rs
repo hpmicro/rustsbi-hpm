@@ -102,7 +102,7 @@ fn set_pmp() {
         pmpcfg0::set_pmp(0, Range::OFF, Permission::NONE, false);
         pmpaddr0::write((0x4000_0000) >> 2);
         pmpcfg0::set_pmp(1, Range::TOR, Permission::RWX, false);
-        pmpaddr1::write((0x4200_0000) >> 2);
+        pmpaddr1::write(usize::MAX >> 2);
     }
 }
 
