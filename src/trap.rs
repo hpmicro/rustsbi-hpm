@@ -23,12 +23,21 @@ fn boot(mut ctx: FastContext, start_addr: usize, opaque: usize) -> FastResult {
 }
 
 #[inline]
-fn delegate(ctx: &mut FastContext) {
+fn delegate() {
     unsafe {
-        sepc::write(ctx.regs().pc);
+        sepc::write(mepc::read());
         scause::write(mcause::read().bits());
         stval::write(mtval::read());
         sstatus::clear_sie();
+        if mstatus::read() & mstatus::MPP == mstatus::MPP_SUPERVISOR {
+            sstatus::set_spp(sstatus::SPP::Supervisor);
+        } else {
+            sstatus::set_spp(sstatus::SPP::User);
+        }
+        mstatus::update(|bits| {
+            *bits &= !mstatus::MPP;
+            *bits |= mstatus::MPP_SUPERVISOR;
+        });
         mepc::write(stvec::read().address());
     }
 }
@@ -132,13 +141,12 @@ pub extern "C" fn fast_handler(
                     break ctx.restore();
                 }
                 T::Exception(E::IllegalInstruction) => {
-                    if mstatus::read() & mstatus::MPP != mstatus::MPP_SUPERVISOR {
-                        panic!("only can handle illegal instruction exception from S-MODE");
+                    if mstatus::read() & mstatus::MPP == mstatus::MPP_MACHINE {
+                        panic!("Illegal instruction exception from M-MODE");
                     }
-
                     ctx.regs().a = [ctx.a0(), a1, a2, a3, a4, a5, a6, a7];
                     if !illegal_instruction_handler(&mut ctx) {
-                        delegate(&mut ctx);
+                        delegate();
                     }
                     break ctx.restore();
                 }
