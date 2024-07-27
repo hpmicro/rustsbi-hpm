@@ -37,6 +37,14 @@ impl BlobInfo {
         let dst: &mut [u8] = core::slice::from_raw_parts_mut(load_address, self.length);
         dst.copy_from_slice(src);
     }
+
+    #[allow(unused)]
+    unsafe fn compare(&self, load_address: *const u8) {
+        let src: &[u8] = core::slice::from_raw_parts(self.start as *const _, self.length);
+        let dst: &[u8] = core::slice::from_raw_parts(load_address, self.length);
+
+        assert!(src.iter().enumerate().all(|(i, &x)| x == dst[i]))
+    }
 }
 
 pub unsafe fn load_test_kernel() {
@@ -44,12 +52,12 @@ pub unsafe fn load_test_kernel() {
     assert!(info.type_ == BlobType::Kernel);
     assert!(info.start + info.length <= BLOB_TABLE[1].start);
 
-    info.load(SUPERVISOR_ENTRY as *mut u8);
+    info.load(SUPERVISOR_ENTRY as *mut _);
 }
 
 pub unsafe fn load_dtb() {
     let info: &BlobInfo = &BLOB_TABLE[1];
     assert!(info.type_ == BlobType::Dts);
 
-    info.load(DTB_LOAD_ADDRESS as *mut u8);
+    info.load(DTB_LOAD_ADDRESS as *mut _);
 }
