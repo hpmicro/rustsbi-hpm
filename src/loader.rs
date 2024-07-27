@@ -3,7 +3,7 @@ use crate::{DTB_LOAD_ADDRESS, SUPERVISOR_ENTRY};
 #[derive(PartialEq)]
 enum BlobType {
     Kernel,
-    Dts,
+    Dtb,
 }
 struct BlobInfo {
     type_: BlobType,
@@ -16,7 +16,7 @@ struct BlobInfo {
 /// |---------|------------|--------|
 /// | RustSBI | 0x80000000 | 64 KB  |
 /// | Kernel  | 0x80010000 | 3 MB   |
-/// | DTS     | 0x80310000 | 16 KB  |
+/// | DTB     | 0x80310000 | 16 KB  |
 ///
 const BLOB_TABLE: &'static [BlobInfo] = &[
     BlobInfo {
@@ -25,7 +25,7 @@ const BLOB_TABLE: &'static [BlobInfo] = &[
         length: 3 * 1024 * 1024,
     },
     BlobInfo {
-        type_: BlobType::Dts,
+        type_: BlobType::Dtb,
         start: 0x80310000,
         length: 16 * 1024,
     },
@@ -57,7 +57,7 @@ pub unsafe fn load_test_kernel() {
 
 pub unsafe fn load_dtb() {
     let info: &BlobInfo = &BLOB_TABLE[1];
-    assert!(info.type_ == BlobType::Dts);
+    assert!(info.type_ == BlobType::Dtb);
 
     info.load(DTB_LOAD_ADDRESS as *mut _);
 }
