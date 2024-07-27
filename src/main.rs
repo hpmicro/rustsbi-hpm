@@ -17,7 +17,7 @@ mod constants {
     /// 特权软件入口。
     pub(crate) const SUPERVISOR_ENTRY: usize = 0x4000_0000;
     /// 设备树加载地址。
-    pub(crate) const DTB_LOAD_ADDRESS: usize = 0x4024_0000;
+    pub(crate) const DTB_LOAD_ADDRESS: usize = 0x4030_0000;
     /// 每个硬件线程设置 16KiB 栈空间。
     pub(crate) const LEN_STACK_PER_HART: usize = 16 * 1024;
 }
@@ -52,6 +52,7 @@ fn main() -> ! {
 [rustsbi] Boot HART          : {hartid}
 [rustsbi] Firmware Address   : {firmware_address:#010x}
 [rustsbi] Supervisor Address : {SUPERVISOR_ENTRY:#010x}
+[rustsbi] Devicetree Address : {DTB_LOAD_ADDRESS:#010x}
 ",
         rustsbi_version = rustsbi::VERSION,
         logo = rustsbi::LOGO,
