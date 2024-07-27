@@ -12,21 +12,21 @@ struct BlobInfo {
 }
 /// # Blob Info Table
 ///
-/// | Name   | Begin      | Length |
-/// |--------|------------|--------|
-/// | Kernel | 0x80040000 | 2 MB   |
-/// | DTS    | 0x80240000 | 16 KB  |
+/// | Name    | Begin      | Length |
+/// |---------|------------|--------|
+/// | RustSBI | 0x80000000 | 64 KB  |
+/// | Kernel  | 0x80010000 | 3 MB   |
+/// | DTS     | 0x80310000 | 16 KB  |
 ///
 const BLOB_TABLE: &'static [BlobInfo] = &[
     BlobInfo {
         type_: BlobType::Kernel,
-        // Keep 256 KB for SBI firmware.
-        start: 0x80040000,
-        length: 2 * 1024 * 1024,
+        start: 0x80010000,
+        length: 3 * 1024 * 1024,
     },
     BlobInfo {
         type_: BlobType::Dts,
-        start: 0x80240000,
+        start: 0x80310000,
         length: 16 * 1024,
     },
 ];
@@ -43,7 +43,7 @@ impl BlobInfo {
         let src: &[u8] = core::slice::from_raw_parts(self.start as *const _, self.length);
         let dst: &[u8] = core::slice::from_raw_parts(load_address, self.length);
 
-        assert!(src.iter().enumerate().all(|(i, &x)| x == dst[i]))
+        assert!(src.eq(dst))
     }
 }
 
