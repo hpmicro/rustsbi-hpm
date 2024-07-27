@@ -91,3 +91,14 @@ pub mod mepc {
         unsafe { asm!("csrw mepc, {}", in(reg) bits, options(nomem)) };
     }
 }
+
+pub mod mdcause {
+    use core::arch::asm;
+
+    #[inline(always)]
+    pub fn read() -> usize {
+        let bits: usize;
+        unsafe { asm!("csrr {}, 0x7c9", out(reg) bits, options(nomem)) };
+        bits
+    }
+}

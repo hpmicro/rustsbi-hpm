@@ -56,10 +56,10 @@ pub fn board_init() {
     let sdram = Sdram::new(pac::FEMC).config();
     println!(
         "\
-[rustsbi pre-init] CPU0 clock frequency  : {}Hz
-[rustsbi pre-init] MCHTMT clock frequency  : {}Hz
-[rustsbi pre-init] SDRAM clock frequency : {}Hz
-[rustsbi pre-init] SDRAM base address    : {:#010x}",
+[rustsbi pre-init] CPU0 clock frequency   : {}Hz
+[rustsbi pre-init] MCHTMT clock frequency : {}Hz
+[rustsbi pre-init] SDRAM clock frequency  : {}Hz
+[rustsbi pre-init] SDRAM base address     : {:#010x}",
         cpu0_clock_freq,
         mchtmr_clock_freq,
         sdram_clock_freq,

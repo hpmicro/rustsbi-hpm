@@ -115,11 +115,13 @@ fn panic(info: &core::panic::PanicInfo) -> ! {
     println!(
         "-----------------------------
 > mcause:  {:?}
-> mstatus: {:#018x}
-> mepc:    {:#018x}
-> mtval:   {:#018x}
+> mdcause: {:#010x}
+> mstatus: {:#010x}
+> mepc:    {:#010x}
+> mtval:   {:#010x}
 -----------------------------",
         mcause::read().cause(),
+        mdcause::read(),
         mstatus::read(),
         mepc::read(),
         mtval::read()
