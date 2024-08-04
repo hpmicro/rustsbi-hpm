@@ -9,7 +9,7 @@ hpm-metapac = { version = "0.0.3", git = "https://github.com/hpmicro-rs/hpm-meta
 ] }
 rustsbi = { version = "0.4.0-alpha.3", features = ["machine"] }
 sbi-spec = { version = "0.0.7", features = ["legacy"] }
-hpm-rt = { git = "https://github.com/hpm-rs/hpm-rt.git", rev = "9957249237231dea1396cf2d696f08ed71451299" }
+hpm-rt = { git = "https://github.com/hpm-rs/hpm-rt.git", rev = "66ffb7d7a65d7251d0b47db9599d36cefc4d6703" }
 
 riscv = "0.10"
 spin = "0.9"
@@ -18,7 +18,7 @@ riscv-decode = "0.2.1"
 lazy_static = { version = "1.5.0", features = ["spin_no_std"] }
 
 [build-dependencies]
-hpm-rt = { git = "https://github.com/hpm-rs/hpm-rt.git", rev = "9957249237231dea1396cf2d696f08ed71451299" }
+hpm-rt = { git = "https://github.com/hpm-rs/hpm-rt.git", rev = "66ffb7d7a65d7251d0b47db9599d36cefc4d6703" }
 
 [features]
 ram = []

@@ -5,7 +5,7 @@ use hpm_rt::*;
 fn boot_from_flash() {
     let xpi_nor_cfg = XpiNorConfigurationOption::new();
 
-    RuntimeBuilder::from_flash(Family::HPM6300, xpi_nor_cfg)
+    RuntimeBuilder::load_from_flash(Family::HPM6300, xpi_nor_cfg)
         .xpi0_flash_size(16 * 1024 * 1024)
         .build()
         .unwrap();

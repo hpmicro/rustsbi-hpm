@@ -60,7 +60,7 @@ dependencies = [
 [[package]]
 name = "hpm-rt"
 version = "0.1.0"
-source = "git+https://github.com/hpm-rs/hpm-rt.git?rev=9957249237231dea1396cf2d696f08ed71451299#9957249237231dea1396cf2d696f08ed71451299"
+source = "git+https://github.com/hpm-rs/hpm-rt.git?rev=66ffb7d7a65d7251d0b47db9599d36cefc4d6703#66ffb7d7a65d7251d0b47db9599d36cefc4d6703"
 dependencies = [
  "cfg-if",
  "r0",
@@ -156,7 +156,7 @@ checksum = "bec7a6dc0b0bb96a4d23271864a45c0d24dcd9dde2a1b630a35f79fa29c588bf"
 [[package]]
 name = "riscv-rt-macros"
 version = "0.2.0"
-source = "git+https://github.com/hpm-rs/hpm-rt.git?rev=9957249237231dea1396cf2d696f08ed71451299#9957249237231dea1396cf2d696f08ed71451299"
+source = "git+https://github.com/hpm-rs/hpm-rt.git?rev=66ffb7d7a65d7251d0b47db9599d36cefc4d6703#66ffb7d7a65d7251d0b47db9599d36cefc4d6703"
 dependencies = [
  "proc-macro2",
  "quote",
