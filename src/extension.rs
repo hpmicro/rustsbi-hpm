@@ -1,4 +1,5 @@
 use rustsbi::RustSBI;
+use spin::Lazy;
 
 use crate::board::{board_init_timer, MachineTimer};
 
@@ -8,10 +9,6 @@ pub struct FixedRustSBI {
     pub timer: MachineTimer,
 }
 
-lazy_static! {
-    pub static ref SBI: FixedRustSBI = {
-        FixedRustSBI {
-            timer: board_init_timer(),
-        }
-    };
-}
+pub static SBI: Lazy<FixedRustSBI> = Lazy::new(|| FixedRustSBI {
+    timer: board_init_timer(),
+});

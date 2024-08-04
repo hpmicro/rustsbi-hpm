@@ -3,9 +3,6 @@
 #![feature(naked_functions, asm_const)]
 #![deny(warnings)]
 
-#[macro_use]
-extern crate lazy_static;
-
 mod board;
 mod extension;
 mod loader;
