@@ -47,7 +47,7 @@ impl BlobInfo {
     }
 }
 
-pub unsafe fn load_test_kernel() {
+pub unsafe fn load_kernel() {
     let info: &BlobInfo = &BLOB_TABLE[0];
     assert!(info.type_ == BlobType::Kernel);
     assert!(info.start + info.length <= BLOB_TABLE[1].start);
