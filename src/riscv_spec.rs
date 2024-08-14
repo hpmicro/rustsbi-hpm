@@ -1,7 +1,7 @@
 ﻿#![allow(unused, missing_docs)]
 
-pub const CSR_TIME: u32 = 0xc01;
-pub const CSR_TIMEH: u32 = 0xc81;
+pub const CSR_TIME: usize = 0xc01;
+pub const CSR_TIMEH: usize = 0xc81;
 
 pub mod mie {
     use core::arch::asm;
@@ -101,4 +101,9 @@ pub mod mdcause {
         unsafe { asm!("csrr {}, 0x7c9", out(reg) bits, options(nomem)) };
         bits
     }
+}
+
+#[inline(always)]
+pub unsafe fn fence_i() {
+    core::arch::asm!("fence.i");
 }
