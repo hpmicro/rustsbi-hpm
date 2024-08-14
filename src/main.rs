@@ -58,7 +58,7 @@ fn main() -> ! {
         firmware_address = _start as usize,
     );
     // 初始化 PMP
-    set_pmp();
+    pmp::set_pmp();
     // 显示 PMP 配置
     pmp::print_pmps();
     // 设置陷入栈
@@ -91,18 +91,6 @@ fn main() -> ! {
             trap_handler = sym fast_trap::trap_entry,
             options(noreturn),
         );
-    }
-}
-
-/// 设置 PMP。
-fn set_pmp() {
-    use riscv::register::*;
-    unsafe {
-        // 1. SDRAM
-        pmpcfg0::set_pmp(0, Range::OFF, Permission::NONE, false);
-        pmpaddr0::write((0x4000_0000) >> 2);
-        pmpcfg0::set_pmp(1, Range::TOR, Permission::RWX, false);
-        pmpaddr1::write(usize::MAX >> 2);
     }
 }
 
