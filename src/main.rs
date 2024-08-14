@@ -65,7 +65,7 @@ fn main() -> ! {
     trap_stack::prepare_for_trap();
     unsafe {
         // 加载内核
-        loader::load_test_kernel();
+        loader::load_kernel();
         // 加载设备树
         loader::load_dtb()
     };
