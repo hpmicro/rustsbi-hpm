@@ -1,4 +1,15 @@
 use crate::println;
+use riscv::register::*;
+
+pub fn set_pmp() {
+    unsafe {
+        // 1. SDRAM
+        pmpcfg0::set_pmp(0, Range::OFF, Permission::NONE, false);
+        pmpaddr0::write((0x4000_0000) >> 2);
+        pmpcfg0::set_pmp(1, Range::TOR, Permission::RWX, false);
+        pmpaddr1::write(usize::MAX >> 2);
+    }
+}
 
 pub(crate) fn print_pmps() {
     const ITEM_PER_CFG: usize = core::mem::size_of::<usize>();
@@ -47,7 +58,6 @@ fn dump_pmp(i: usize, s: usize, e: usize, cfg: usize) {
 }
 
 fn pmpcfg(i: usize) -> usize {
-    use riscv::register::*;
     match i {
         0 => pmpcfg0::read().bits,
         #[cfg(target_arch = "riscv32")]
@@ -60,7 +70,6 @@ fn pmpcfg(i: usize) -> usize {
 }
 
 fn pmpaddr(i: usize) -> usize {
-    use riscv::register::*;
     match i {
         0x0 => pmpaddr0::read(),
         0x1 => pmpaddr1::read(),
