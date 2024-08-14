@@ -34,8 +34,10 @@
 ```shell
 # 安装 cargo-binutils
 cargo install cargo-binutils
+# 编译
+cargo build --features=flash --release
 # 生成 .bin 文件
-cargo objcopy --release --features=flash  -- -O binary rustsbi.bin
+cargo objcopy --features=flash --release -- -O binary rustsbi.bin
 ```
 
 编译完成后，可使用 [hpm_isp](https://github.com/tfx2001/hpm_isp) 进行烧录。修改启动模式选择管脚为 `BOOT_MODE[1:0]=0b10` 后将 USB0 连接至 PC，运行如下命令进行烧录。
