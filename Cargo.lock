@@ -141,8 +141,7 @@ dependencies = [
 [[package]]
 name = "riscv-decode"
 version = "0.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bec7a6dc0b0bb96a4d23271864a45c0d24dcd9dde2a1b630a35f79fa29c588bf"
+source = "git+https://github.com/fintelia/riscv-decode.git?rev=349b2a6b9fa608fc427aa46eaef8935557510d28#349b2a6b9fa608fc427aa46eaef8935557510d28"
 
 [[package]]
 name = "riscv-rt-macros"
@@ -187,7 +186,7 @@ checksum = "a71347da9582cc6b6f3652c7d2c06516c9555690b3738ecdff7e84297f4e17fc"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.71",
+ "syn 2.0.74",
 ]
 
 [[package]]
@@ -224,9 +223,9 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "2.0.71"
+version = "2.0.74"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b146dcf730474b4bcd16c311627b31ede9ab149045db4d6088b3becaea046462"
+checksum = "1fceb41e3d546d0bd83421d3409b1460cc7444cd389341a4c880fe7a042cb3d7"
 dependencies = [
  "proc-macro2",
  "quote",

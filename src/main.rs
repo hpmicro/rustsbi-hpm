@@ -84,6 +84,8 @@ fn main() -> ! {
         medeleg::clear_supervisor_env_call();
         medeleg::clear_illegal_instruction();
         medeleg::clear_machine_env_call();
+        medeleg::clear_store_fault();
+        medeleg::clear_load_fault();
         mtvec::write(fast_trap::trap_entry as _, mtvec::TrapMode::Direct);
         asm!("j {trap_handler}",
             trap_handler = sym fast_trap::trap_entry,

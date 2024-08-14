@@ -1,15 +1,33 @@
-use fast_trap::{FastContext, FastResult};
+use fast_trap::{EntireContext, EntireContextSeparated, EntireResult, FastContext, FastResult};
 use riscv::register::{
     mcause::{self, Exception as E, Interrupt as I, Trap as T},
     mip, mtval, scause, sepc, sstatus, stval, stvec,
 };
+use riscv_decode::{decode, Instruction};
 use rustsbi::RustSBI;
 
-use crate::board;
 use crate::extension::SBI;
 use crate::local_hsm;
-use crate::print;
 use crate::riscv_spec::*;
+use crate::{board, print};
+
+static mut S_LR_ADDR: usize = 0;
+/// `csrrw zero, time, zero`
+const BKPT_INST: usize = 0xc0101073;
+static mut BKPT_INST_ADDR: usize = 0;
+static mut BKPT_RESERVED_INST: usize = 0;
+
+macro_rules! amo {
+    ($ctx:expr, $inst:ident, $operation:expr) => {{
+        let tmp = read_register($ctx, $inst.rs1());
+        let a = *(tmp as *const _);
+        let b = read_register($ctx, $inst.rs2());
+        if ($inst.rd() != 0) {
+            write_register($ctx, $inst.rd(), a);
+        }
+        *(tmp as *mut _) = $operation(a, b);
+    }};
+}
 
 #[inline]
 fn boot(mut ctx: FastContext, start_addr: usize, opaque: usize) -> FastResult {
@@ -24,54 +42,211 @@ fn boot(mut ctx: FastContext, start_addr: usize, opaque: usize) -> FastResult {
 }
 
 #[inline]
-fn delegate() {
-    unsafe {
-        sepc::write(mepc::read());
-        scause::write(mcause::read().bits());
-        stval::write(mtval::read());
-        sstatus::clear_sie();
-        if mstatus::read() & mstatus::MPP == mstatus::MPP_SUPERVISOR {
-            sstatus::set_spp(sstatus::SPP::Supervisor);
-        } else {
-            sstatus::set_spp(sstatus::SPP::User);
-        }
-        mstatus::update(|bits| {
-            *bits &= !mstatus::MPP;
-            *bits |= mstatus::MPP_SUPERVISOR;
-        });
-        mepc::write(stvec::read().address());
+fn check_trap_privilege_mode() {
+    if mstatus::read() & mstatus::MPP == mstatus::MPP_MACHINE {
+        panic!("{:?} from M-MODE", mcause::read().cause());
     }
 }
 
 #[inline]
-fn illegal_instruction_handler(ctx: &mut FastContext) -> bool {
-    use riscv_decode::{decode, Instruction};
+unsafe fn delegate() {
+    sepc::write(mepc::read());
+    scause::write(mcause::read().bits());
+    stval::write(mtval::read());
+    sstatus::clear_sie();
+    if mstatus::read() & mstatus::MPP == mstatus::MPP_SUPERVISOR {
+        sstatus::set_spp(sstatus::SPP::Supervisor);
+    } else {
+        sstatus::set_spp(sstatus::SPP::User);
+    }
+    mstatus::update(|bits| {
+        *bits &= !mstatus::MPP;
+        *bits |= mstatus::MPP_SUPERVISOR;
+    });
+    mepc::write(stvec::read().address());
+}
 
+#[inline]
+fn illegal_instruction_handler(mut ctx: FastContext) -> Result<FastResult, FastContext> {
     let inst = decode(mtval::read() as u32);
     match inst {
-        Ok(Instruction::Csrrs(csr)) => match csr.csr() {
+        Ok(Instruction::Csrrs(csr)) => match csr.csr() as usize {
             CSR_TIME => {
-                assert!(
-                    10 <= csr.rd() && csr.rd() <= 17,
-                    "Unsupported CSR rd: {}",
-                    csr.rd()
-                );
                 ctx.regs().a[(csr.rd() - 10) as usize] = SBI.timer.time() as usize;
             }
             CSR_TIMEH => {
-                assert!(
-                    10 <= csr.rd() && csr.rd() <= 17,
-                    "Unsupported CSR rd: {}",
-                    csr.rd()
-                );
                 ctx.regs().a[(csr.rd() - 10) as usize] = SBI.timer.timeh() as usize;
             }
-            _ => return false,
+            _ => return Err(ctx),
         },
-        _ => return false,
+        Ok(Instruction::Csrrw(csr)) => unsafe {
+            if csr.csr() as usize == CSR_TIME && mepc::read() == BKPT_INST_ADDR {
+                clear_breakpoint();
+                return Ok(ctx.continue_with(atomic_emulation_wrapper, ()));
+            } else {
+                return Err(ctx);
+            }
+        },
+        _ => return Err(ctx),
     }
     mepc::next();
-    true
+    Ok(ctx.restore())
+}
+
+unsafe fn find_next_sc(addr: usize) -> Result<usize, ()> {
+    let mut addr = addr;
+    for _ in 0..16 {
+        let inst = (addr as *const u32).read();
+        if let Ok(Instruction::ScW(_)) = decode(inst) {
+            return Ok(addr);
+        } else if (inst & 0xFF) != 0b11 {
+            // RVC instruction
+            addr += 2;
+        } else {
+            addr += 4;
+        }
+    }
+    Err(())
+}
+
+unsafe fn set_breakpoint(addr: usize) {
+    let addr = addr as *mut usize;
+    BKPT_RESERVED_INST = addr.read();
+    BKPT_INST_ADDR = addr as usize;
+    *addr = BKPT_INST;
+    fence_i();
+}
+
+unsafe fn clear_breakpoint() {
+    if BKPT_INST_ADDR != 0 {
+        let addr = BKPT_INST_ADDR as *mut usize;
+        *addr = BKPT_RESERVED_INST;
+        BKPT_INST_ADDR = 0;
+        fence_i();
+    }
+}
+
+unsafe fn write_register(ctx: &mut EntireContextSeparated, r: u32, value: usize) {
+    let r = r as usize;
+    match r {
+        // x0
+        0 => {}
+        // gp
+        3 => core::arch::asm!("c.mv gp, {}", in(reg) value),
+        // tp
+        4 => core::arch::asm!("c.mv tp, {}", in(reg) value),
+        5..=7 => ctx.regs().t[r - 5] = value,
+        8..=9 => {
+            ctx.regs().s[r - 8] = value;
+        }
+        10..=17 => {
+            ctx.regs().a[r - 10] = value;
+        }
+        18..=27 => {
+            ctx.regs().s[r - 16] = value;
+        }
+        28..=31 => {
+            ctx.regs().t[r - 25] = value;
+        }
+        _ => panic!("invalid register number: {}", r),
+    }
+}
+
+fn read_register(ctx: &mut EntireContextSeparated, r: u32) -> usize {
+    let r = r as usize;
+    match r {
+        // x0
+        0 => 0,
+        // gp
+        3 => unsafe {
+            let value: usize;
+            core::arch::asm!("c.mv {}, gp", out(reg) value);
+            value
+        },
+        4 => unsafe {
+            let value: usize;
+            core::arch::asm!("c.mv {}, tp", out(reg) value);
+            value
+        },
+        5..=7 => ctx.regs().t[r - 5],
+        8..=9 => ctx.regs().s[r - 8],
+        10..=17 => ctx.regs().a[r - 10],
+        18..=27 => ctx.regs().s[r - 16],
+        28..=31 => ctx.regs().t[r - 25],
+        _ => panic!("invalid register number: {}", r),
+    }
+}
+
+unsafe fn atomic_emulation(mut ctx: EntireContextSeparated) -> EntireResult {
+    let inst = (mepc::read() as *const u32).read_unaligned();
+    let decoded_inst = decode(inst);
+    match decoded_inst {
+        Ok(Instruction::LrW(lr)) => {
+            let rs1 = lr.rs1();
+            let rd = lr.rd();
+            S_LR_ADDR = read_register(&mut ctx, rs1);
+            let tmp: usize = *(S_LR_ADDR as *const _);
+            write_register(&mut ctx, rd, tmp);
+
+            // Clear old breakpoint and set a new one
+            clear_breakpoint();
+            let sc_inst_addr = find_next_sc(mepc::read()).unwrap_or_else(|_| {
+                panic!("[rustsbi] unable to find matching sc instruction");
+            });
+            set_breakpoint(sc_inst_addr);
+        }
+        Ok(Instruction::ScW(sc)) => {
+            let rs1 = sc.rs1();
+            let rs2 = sc.rs2();
+            let rd = sc.rd();
+            let tmp: usize = read_register(&mut ctx, rs1);
+            if tmp != S_LR_ADDR {
+                write_register(&mut ctx, rd, 1);
+            } else {
+                *(S_LR_ADDR as *mut _) = read_register(&mut ctx, rs2);
+                write_register(&mut ctx, rd, 0);
+                S_LR_ADDR = 0;
+            }
+        }
+        Ok(Instruction::AmoswapW(amo)) => {
+            amo!(&mut ctx, amo, |_, b| b);
+        }
+        Ok(Instruction::AmoaddW(amo)) => {
+            amo!(&mut ctx, amo, |a, b| a + b);
+        }
+        Ok(Instruction::AmoxorW(amo)) => {
+            amo!(&mut ctx, amo, |a, b| a ^ b);
+        }
+        Ok(Instruction::AmoandW(amo)) => {
+            amo!(&mut ctx, amo, |a, b| a & b);
+        }
+        Ok(Instruction::AmoorW(amo)) => {
+            amo!(&mut ctx, amo, |a, b| a | b);
+        }
+        Ok(Instruction::AmominW(amo)) => {
+            amo!(&mut ctx, amo, |a, b| (a as isize).min(b as isize));
+        }
+        Ok(Instruction::AmomaxW(amo)) => {
+            amo!(&mut ctx, amo, |a, b| (a as isize).max(b as isize));
+        }
+        Ok(Instruction::AmominuW(amo)) => {
+            amo!(&mut ctx, amo, |a: usize, b| a.min(b));
+        }
+        Ok(Instruction::AmomaxuW(amo)) => {
+            amo!(&mut ctx, amo, |a: usize, b| a.max(b));
+        }
+        _ => {
+            delegate();
+            return ctx.restore();
+        }
+    }
+    mepc::next();
+    ctx.restore()
+}
+
+extern "C" fn atomic_emulation_wrapper(ctx: EntireContext) -> EntireResult {
+    let (ctx, _) = ctx.split();
+    unsafe { atomic_emulation(ctx) }
 }
 
 #[no_mangle]
@@ -145,14 +320,22 @@ pub extern "C" fn fast_handler(
                     break ctx.restore();
                 }
                 T::Exception(E::IllegalInstruction) => {
-                    if mstatus::read() & mstatus::MPP == mstatus::MPP_MACHINE {
-                        panic!("Illegal instruction exception from M-MODE");
-                    }
+                    check_trap_privilege_mode();
                     ctx.regs().a = [ctx.a0(), a1, a2, a3, a4, a5, a6, a7];
-                    if !illegal_instruction_handler(&mut ctx) {
+                    break illegal_instruction_handler(ctx).unwrap_or_else(|ctx| unsafe {
                         delegate();
-                    }
-                    break ctx.restore();
+                        ctx.restore()
+                    });
+                }
+                T::Exception(E::LoadFault) => {
+                    check_trap_privilege_mode();
+                    ctx.regs().a = [ctx.a0(), a1, a2, a3, a4, a5, a6, a7];
+                    break ctx.continue_with(atomic_emulation_wrapper, ());
+                }
+                T::Exception(E::StoreFault) => {
+                    check_trap_privilege_mode();
+                    ctx.regs().a = [ctx.a0(), a1, a2, a3, a4, a5, a6, a7];
+                    break ctx.continue_with(atomic_emulation_wrapper, ());
                 }
                 T::Interrupt(I::MachineTimer) => {
                     ctx.regs().a = [ctx.a0(), a1, a2, a3, a4, a5, a6, a7];
