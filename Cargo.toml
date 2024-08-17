@@ -9,7 +9,7 @@ hpm-metapac = { version = "0.0.3", git = "https://github.com/hpmicro-rs/hpm-meta
 ] }
 rustsbi = { version = "0.4.0-alpha.3", features = ["machine"] }
 sbi-spec = { version = "0.0.7", features = ["legacy"] }
-hpm-rt = { git = "https://github.com/hpm-rs/hpm-rt.git", rev = "66ffb7d7a65d7251d0b47db9599d36cefc4d6703" }
+hpm-rt = { git = "https://github.com/hpm-rs/hpm-rt.git", rev = "f9dd2f2122630ebfa8d9b96f539aba8be1c92784" }
 
 riscv = "0.10"
 spin = "0.9"
@@ -17,7 +17,7 @@ fast-trap = { version = "0.0.1", features = ["riscv-m"] }
 riscv-decode = { git = "https://github.com/fintelia/riscv-decode.git", rev = "349b2a6b9fa608fc427aa46eaef8935557510d28" }
 
 [build-dependencies]
-hpm-rt = { git = "https://github.com/hpm-rs/hpm-rt.git", rev = "66ffb7d7a65d7251d0b47db9599d36cefc4d6703" }
+hpm-rt = { git = "https://github.com/hpm-rs/hpm-rt.git", rev = "f9dd2f2122630ebfa8d9b96f539aba8be1c92784" }
 
 [features]
 ram = []

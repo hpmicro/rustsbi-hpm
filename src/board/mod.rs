@@ -39,6 +39,7 @@ macro_rules! println {
 
 pub fn board_init() {
     hpm_rt::cache::icache_enable();
+    hpm_rt::cache::dcache_enable();
 
     let clock = unsafe { ClockConfigurator::new(pac::SYSCTL, pac::PLLCTL).freeze() };
 
