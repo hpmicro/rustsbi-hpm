@@ -60,7 +60,7 @@ dependencies = [
 [[package]]
 name = "hpm-rt"
 version = "0.1.0"
-source = "git+https://github.com/hpm-rs/hpm-rt.git?rev=66ffb7d7a65d7251d0b47db9599d36cefc4d6703#66ffb7d7a65d7251d0b47db9599d36cefc4d6703"
+source = "git+https://github.com/hpm-rs/hpm-rt.git?rev=f9dd2f2122630ebfa8d9b96f539aba8be1c92784#f9dd2f2122630ebfa8d9b96f539aba8be1c92784"
 dependencies = [
  "cfg-if",
  "r0",
@@ -146,7 +146,7 @@ source = "git+https://github.com/fintelia/riscv-decode.git?rev=349b2a6b9fa608fc4
 [[package]]
 name = "riscv-rt-macros"
 version = "0.2.0"
-source = "git+https://github.com/hpm-rs/hpm-rt.git?rev=66ffb7d7a65d7251d0b47db9599d36cefc4d6703#66ffb7d7a65d7251d0b47db9599d36cefc4d6703"
+source = "git+https://github.com/hpm-rs/hpm-rt.git?rev=f9dd2f2122630ebfa8d9b96f539aba8be1c92784#f9dd2f2122630ebfa8d9b96f539aba8be1c92784"
 dependencies = [
  "proc-macro2",
  "quote",
