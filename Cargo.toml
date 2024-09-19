@@ -2,6 +2,7 @@
 name = "rustsbi-hpm"
 version = "0.1.0"
 edition = "2021"
+repository = "https://github.com/hpmicro/rustsbi-hpm"
 
 [dependencies]
 hpm-metapac = { version = "0.0.3", git = "https://github.com/hpmicro-rs/hpm-metapac.git", tag = "hpm-data-c9fcffe822d42025324b28640051da8a0afb3cfc", features = [
