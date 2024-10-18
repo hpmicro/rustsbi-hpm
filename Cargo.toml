@@ -8,7 +8,7 @@ repository = "https://github.com/hpmicro/rustsbi-hpm"
 hpm-metapac = { version = "0.0.3", git = "https://github.com/hpmicro-rs/hpm-metapac.git", tag = "hpm-data-c9fcffe822d42025324b28640051da8a0afb3cfc", features = [
     "hpm6360",
 ] }
-rustsbi = { version = "0.4.0-alpha.3", features = ["machine"] }
+rustsbi = { version = "0.4.0", features = ["machine"] }
 sbi-spec = { version = "0.0.7", features = ["legacy"] }
 hpm-rt = { git = "https://github.com/hpm-rs/hpm-rt.git", rev = "f9dd2f2122630ebfa8d9b96f539aba8be1c92784" }
 
