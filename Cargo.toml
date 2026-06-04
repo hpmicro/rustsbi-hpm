@@ -1,7 +1,7 @@
 [package]
 name = "rustsbi-hpm"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 repository = "https://github.com/hpmicro/rustsbi-hpm"
 
 [dependencies]
@@ -14,7 +14,7 @@ hpm-rt = { git = "https://github.com/hpm-rs/hpm-rt.git", rev = "f9dd2f2122630ebf
 
 riscv = "0.10"
 spin = "0.9"
-fast-trap = { version = "0.0.1", features = ["riscv-m"] }
+fast-trap = { git = "https://github.com/rustsbi/fast-trap.git", features = ["riscv-m"] }
 riscv-decode = "0.2.2"
 
 [build-dependencies]

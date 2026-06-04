@@ -249,8 +249,8 @@ extern "C" fn atomic_emulation_wrapper(ctx: EntireContext) -> EntireResult {
     unsafe { atomic_emulation(ctx) }
 }
 
-#[no_mangle]
-#[link_section = ".trap"]
+#[unsafe(no_mangle)]
+#[unsafe(link_section = ".trap")]
 pub extern "C" fn fast_handler(
     mut ctx: FastContext,
     a1: usize,

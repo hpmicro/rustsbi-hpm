@@ -1,7 +1,7 @@
 #![no_std]
 #![no_main]
-#![feature(naked_functions, asm_const)]
 #![deny(warnings)]
+#![allow(unsafe_op_in_unsafe_fn, static_mut_refs)]
 
 mod board;
 mod extension;
@@ -118,6 +118,6 @@ fn panic(info: &core::panic::PanicInfo) -> ! {
     loop {}
 }
 
-extern "C" {
+unsafe extern "C" {
     fn _start();
 }
