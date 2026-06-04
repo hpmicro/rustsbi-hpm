@@ -1,5 +1,3 @@
-#![allow(unused)]
-
 use hpm_rt::*;
 
 fn boot_from_flash() {

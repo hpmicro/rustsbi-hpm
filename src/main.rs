@@ -26,7 +26,12 @@ use constants::*;
 use riscv_spec::*;
 use trap_stack::local_hsm;
 
-/// 特权软件信息。
+#[cfg(feature = "hpm6360evk")]
+const PLATFORM: &str = "HPM6360EVK";
+
+#[cfg(feature = "hpm6360evk")]
+use board::hpm6360evk as board_impl;
+
 #[derive(Debug)]
 struct Supervisor {
     start_addr: usize,
@@ -37,9 +42,10 @@ struct Supervisor {
 fn main() -> ! {
     let hartid = riscv::register::mhartid::read();
 
+    // TODO: This will be replaced by board_impl::board_init() in Task 6
+    // For now, keep the old board::board_init() call to compile
     board::board_init();
 
-    // Print startup messages
     print!(
         "\
 [rustsbi] RustSBI version {rustsbi_version}, adapting to RISC-V SBI v2.0.0
@@ -54,7 +60,7 @@ fn main() -> ! {
         rustsbi_version = rustsbi::VERSION,
         logo = rustsbi::LOGO,
         impl_version = env!("CARGO_PKG_VERSION"),
-        model = "HPM6360EVK",
+        model = PLATFORM,
         firmware_address = _start as usize,
     );
     // 初始化 PMP

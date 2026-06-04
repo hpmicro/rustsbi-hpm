@@ -5,9 +5,8 @@ edition = "2024"
 repository = "https://github.com/hpmicro/rustsbi-hpm"
 
 [dependencies]
-hpm-metapac = { version = "0.0.3", git = "https://github.com/hpmicro-rs/hpm-metapac.git", tag = "hpm-data-c9fcffe822d42025324b28640051da8a0afb3cfc", features = [
-    "hpm6360",
-] }
+hpm-metapac = { version = "0.0.3", git = "https://github.com/hpmicro-rs/hpm-metapac.git", tag = "hpm-data-c9fcffe822d42025324b28640051da8a0afb3cfc" }
+hpm-hal = { version = "0.0.1", git = "https://github.com/hpmicro-rs/hpm-hal.git", rev = "c827b9d1b7d2fe0e7ea86e2c8294c65d8d140bcd", optional = true, default-features = false }
 rustsbi = { version = "0.4.0", features = ["machine"] }
 sbi-spec = { version = "0.0.7", features = ["legacy"] }
 hpm-rt = { git = "https://github.com/hpm-rs/hpm-rt.git", rev = "f9dd2f2122630ebfa8d9b96f539aba8be1c92784" }
@@ -17,10 +16,20 @@ spin = "0.9"
 fast-trap = { git = "https://github.com/rustsbi/fast-trap.git", features = ["riscv-m"] }
 riscv-decode = "0.2.2"
 
+embedded-hal = "1.0"
+
 [build-dependencies]
 hpm-rt = { git = "https://github.com/hpm-rs/hpm-rt.git", rev = "f9dd2f2122630ebfa8d9b96f539aba8be1c92784" }
 
 [features]
+default = []
+hpm6360evk = [
+    "hpm-metapac/hpm6360",
+    "hpm-hal/hpm6360",
+    "hpm-hal/defmt",
+    "hpm-hal/rt",
+    "dep:hpm-hal",
+]
 ram = []
 flash = []
 
