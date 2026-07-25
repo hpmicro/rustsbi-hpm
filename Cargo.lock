@@ -4,15 +4,6 @@ version = 4
 
 [[package]]
 name = "andes-riscv"
-version = "0.1.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5ee4a85c234d744046b4e3b0db606ef7f537d08ad7204a6569c07d1b5c9acb66"
-dependencies = [
- "riscv 0.16.1",
-]
-
-[[package]]
-name = "andes-riscv"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f8565440e8ab4c1f51b11215f053737b0ae37d8addb6358c22b727120b3a17a4"
@@ -95,6 +86,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "document-features"
+version = "0.2.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d4b8a88685455ed29a21542a33abd9cb6510b6b129abadabdcef0f4c55bc8f61"
+dependencies = [
+ "litrs",
+]
+
+[[package]]
 name = "embassy-futures"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -110,6 +110,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "embassy-net-driver"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "524eb3c489760508f71360112bca70f6e53173e6fe48fc5f0efd0f5ab217751d"
+
+[[package]]
 name = "embassy-sync"
 version = "0.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -121,6 +127,31 @@ dependencies = [
  "futures-core",
  "futures-sink",
  "heapless",
+]
+
+[[package]]
+name = "embassy-time"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "592b0c143ec626e821d4d90da51a2bd91d559d6c442b7c74a47d368c9e23d97a"
+dependencies = [
+ "cfg-if",
+ "critical-section",
+ "document-features",
+ "embassy-time-driver",
+ "embedded-hal 0.2.7",
+ "embedded-hal 1.0.0",
+ "embedded-hal-async",
+ "futures-core",
+]
+
+[[package]]
+name = "embassy-time-driver"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6ee71af1b3a0deaa53eaf2d39252f83504c853646e472400b763060389b9fcc9"
+dependencies = [
+ "document-features",
 ]
 
 [[package]]
@@ -261,14 +292,15 @@ dependencies = [
 [[package]]
 name = "hpm-hal"
 version = "0.0.1"
-source = "git+https://github.com/hpmicro-rs/hpm-hal.git?rev=c827b9d1b7d2fe0e7ea86e2c8294c65d8d140bcd#c827b9d1b7d2fe0e7ea86e2c8294c65d8d140bcd"
 dependencies = [
- "andes-riscv 0.1.4",
+ "andes-riscv",
  "critical-section",
  "defmt",
  "embassy-futures",
  "embassy-hal-internal",
+ "embassy-net-driver",
  "embassy-sync",
+ "embassy-time",
  "embassy-usb-driver",
  "embedded-hal 1.0.0",
  "embedded-hal-async",
@@ -277,51 +309,43 @@ dependencies = [
  "embedded-io-async 0.7.0",
  "embedded-storage",
  "futures-util",
- "hpm-metapac 0.1.0",
+ "hpm-metapac",
  "hpm-riscv-rt",
  "nb 1.1.0",
  "proc-macro2",
  "quote",
  "rand_core",
- "riscv 0.15.0",
+ "riscv 0.16.1",
  "riscv-pac",
+ "sdio-host",
  "static_assertions",
-]
-
-[[package]]
-name = "hpm-metapac"
-version = "0.0.3"
-source = "git+https://github.com/hpmicro-rs/hpm-metapac.git?tag=hpm-data-c9fcffe822d42025324b28640051da8a0afb3cfc#89b84eea3095869f5ee2a60886d3398bbc5fc196"
-dependencies = [
- "riscv 0.11.1",
  "vcell",
 ]
 
 [[package]]
 name = "hpm-metapac"
 version = "0.1.0"
-source = "git+https://github.com/hpmicro-rs/hpm-metapac.git?tag=hpm-data-abf274bfa5ee7f403a4d148e2409e0eb3fe9229d#eaeb8476ae4615ffaa948b204373981f639df17b"
 dependencies = [
- "riscv 0.15.0",
- "riscv-rt",
+ "riscv 0.16.1",
+ "riscv-pac",
 ]
 
 [[package]]
 name = "hpm-riscv-rt"
-version = "0.3.4"
+version = "0.3.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5df9f114e2a9b73d6bf80597922f269c844a9b738313b4dea8bdecef0d0d3e90"
+checksum = "09bfaaa98200ff710847cb5af8bf8777f947e3fb699ac0d7cf074c490cc2c95b"
 dependencies = [
- "andes-riscv 0.3.0",
+ "andes-riscv",
  "hpm-riscv-rt-macros",
  "riscv 0.16.1",
 ]
 
 [[package]]
 name = "hpm-riscv-rt-macros"
-version = "0.3.4"
+version = "0.3.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f2c3815eb40cd6a95dc1affa8f1d868a89c0b66d9a1e056120ee1f3e8b6cd968"
+checksum = "25331d770f0a8682f75ece61c71a5165b8e6aa54df7b90cff2eb6d8c375f5546"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -336,8 +360,14 @@ dependencies = [
  "cfg-if",
  "r0",
  "riscv 0.10.1",
- "riscv-rt-macros 0.2.0",
+ "riscv-rt-macros",
 ]
+
+[[package]]
+name = "litrs"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "11d3d7f243d5c5a8b9bb5d6dd2b1602c0cb0b9db1621bafc7ed66e35ff9fe092"
 
 [[package]]
 name = "lock_api"
@@ -371,12 +401,6 @@ checksum = "071dfc062690e90b734c0b2273ce72ad0ffa95f0c74596bc250dcfd960262841"
 dependencies = [
  "autocfg",
 ]
-
-[[package]]
-name = "paste"
-version = "1.0.15"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
 name = "pastey"
@@ -455,29 +479,6 @@ dependencies = [
 
 [[package]]
 name = "riscv"
-version = "0.11.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2f5c1b8bf41ea746266cdee443d1d1e9125c86ce1447e1a2615abd34330d33a9"
-dependencies = [
- "critical-section",
- "embedded-hal 1.0.0",
-]
-
-[[package]]
-name = "riscv"
-version = "0.15.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b05cfa3f7b30c84536a9025150d44d26b8e1cc20ddf436448d74cd9591eefb25"
-dependencies = [
- "critical-section",
- "embedded-hal 1.0.0",
- "paste",
- "riscv-macros 0.3.0",
- "riscv-pac",
-]
-
-[[package]]
-name = "riscv"
 version = "0.16.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e42cdafa0aa3f0f956b7993cace26de5dafff7bb4f2c5b1dcb2c3723f4267a4f"
@@ -485,7 +486,7 @@ dependencies = [
  "critical-section",
  "embedded-hal 1.0.0",
  "pastey",
- "riscv-macros 0.4.1",
+ "riscv-macros",
  "riscv-types",
 ]
 
@@ -494,17 +495,6 @@ name = "riscv-decode"
 version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "68b59d645e392e041ad18f5e529ed13242d8405c66bb192f59703ea2137017d0"
-
-[[package]]
-name = "riscv-macros"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7d323d13972c1b104aa036bc692cd08b822c8bbf23d79a27c526095856499799"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.117",
-]
 
 [[package]]
 name = "riscv-macros"
@@ -519,21 +509,9 @@ dependencies = [
 
 [[package]]
 name = "riscv-pac"
-version = "0.2.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8188909339ccc0c68cfb5a04648313f09621e8b87dc03095454f1a11f6c5d436"
-
-[[package]]
-name = "riscv-rt"
-version = "0.16.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3d07b9f3a0eff773fc4df11f44ada4fa302e529bff4b7fe7e6a4b98a65ce9174"
-dependencies = [
- "riscv 0.15.0",
- "riscv-pac",
- "riscv-rt-macros 0.6.1",
- "riscv-target-parser",
-]
+checksum = "a1e3b2a76af1481cb18b7fa0390511d2570450e28e71253e585e681841a645b6"
 
 [[package]]
 name = "riscv-rt-macros"
@@ -544,23 +522,6 @@ dependencies = [
  "quote",
  "syn 1.0.109",
 ]
-
-[[package]]
-name = "riscv-rt-macros"
-version = "0.6.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "def519ddeeb5e43c2b4fc3952c27b3a86782fc05192f322b2309125cd85b1fc3"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.117",
-]
-
-[[package]]
-name = "riscv-target-parser"
-version = "0.1.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b1376b15f3ff160e9b1e8ea564ce427f2f6fcf77528cc0a8bf405cb476f9cea7"
 
 [[package]]
 name = "riscv-types"
@@ -584,10 +545,12 @@ name = "rustsbi-hpm"
 version = "0.1.0"
 dependencies = [
  "embedded-hal 1.0.0",
+ "embedded-hal-nb",
  "fast-trap",
  "hpm-hal",
- "hpm-metapac 0.0.3",
+ "hpm-metapac",
  "hpm-rt",
+ "nb 1.1.0",
  "riscv 0.10.1",
  "riscv-decode",
  "rustsbi",
@@ -628,10 +591,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
 
 [[package]]
-name = "spin"
-version = "0.9.8"
+name = "sdio-host"
+version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6980e8d7511241f8acf4aebddbb1ff938df5eebe98691418c4468d0b72a96a67"
+checksum = "b328e2cb950eeccd55b7f55c3a963691455dcd044cfb5354f0c5e68d2c2d6ee2"
+
+[[package]]
+name = "spin"
+version = "0.12.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8abadc99fd9c7bbb7d0ca2b31d72a067d0c0dcd7aad25ab8cac71ba91417694b"
 dependencies = [
  "lock_api",
 ]

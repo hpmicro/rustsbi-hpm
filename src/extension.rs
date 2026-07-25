@@ -1,7 +1,7 @@
 use rustsbi::RustSBI;
-use spin::Lazy;
+use spin::LazyLock;
 
-use crate::board::{board_init_timer, MachineTimer};
+use crate::board::{MachineTimer, board_init_timer};
 
 #[derive(RustSBI)]
 pub struct FixedRustSBI {
@@ -9,6 +9,6 @@ pub struct FixedRustSBI {
     pub timer: MachineTimer,
 }
 
-pub static SBI: Lazy<FixedRustSBI> = Lazy::new(|| FixedRustSBI {
+pub static SBI: LazyLock<FixedRustSBI> = LazyLock::new(|| FixedRustSBI {
     timer: board_init_timer(),
 });

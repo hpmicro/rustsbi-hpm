@@ -4,7 +4,6 @@ use riscv::register::mip;
 use rustsbi::Timer;
 
 use super::pac::mchtmr::Mchtmr;
-use crate::println;
 
 pub struct MachineTimer {
     inner: Mchtmr,

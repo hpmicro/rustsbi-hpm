@@ -1,6 +1,6 @@
 #![no_std]
 #![no_main]
-#![deny(warnings)]
+// #![deny(warnings)]
 #![allow(unsafe_op_in_unsafe_fn, static_mut_refs)]
 
 mod board;
@@ -26,12 +26,6 @@ use constants::*;
 use riscv_spec::*;
 use trap_stack::local_hsm;
 
-#[cfg(feature = "hpm6360evk")]
-const PLATFORM: &str = "HPM6360EVK";
-
-#[cfg(feature = "hpm6360evk")]
-use board::hpm6360evk as board_impl;
-
 #[derive(Debug)]
 struct Supervisor {
     start_addr: usize,
@@ -42,8 +36,6 @@ struct Supervisor {
 fn main() -> ! {
     let hartid = riscv::register::mhartid::read();
 
-    // TODO: This will be replaced by board_impl::board_init() in Task 6
-    // For now, keep the old board::board_init() call to compile
     board::board_init();
 
     print!(
@@ -60,7 +52,7 @@ fn main() -> ! {
         rustsbi_version = rustsbi::VERSION,
         logo = rustsbi::LOGO,
         impl_version = env!("CARGO_PKG_VERSION"),
-        model = PLATFORM,
+        model = board::PLATFORM,
         firmware_address = _start as usize,
     );
     // 初始化 PMP

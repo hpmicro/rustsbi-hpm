@@ -18,7 +18,7 @@ struct BlobInfo {
 /// | Kernel  | 0x80010000 | 3 MB   |
 /// | DTB     | 0x80310000 | 16 KB  |
 ///
-const BLOB_TABLE: &'static [BlobInfo] = &[
+const BLOB_TABLE: &[BlobInfo] = &[
     BlobInfo {
         type_: BlobType::Kernel,
         start: 0x80010000,
