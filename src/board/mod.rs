@@ -10,6 +10,10 @@ pub mod uart;
 #[path = "hpm6360evk/mod.rs"]
 mod board_impl;
 
+#[cfg(feature = "hpm6750evkmini")]
+#[path = "hpm6750evkmini/mod.rs"]
+mod board_impl;
+
 pub use board_impl::{PLATFORM, board_init};
 pub use mchtmr::MachineTimer;
 pub use uart::{getchar, putchar};

@@ -6,7 +6,7 @@ repository = "https://github.com/hpmicro/rustsbi-hpm"
 
 [dependencies]
 hpm-metapac = { path = "../hpm-metapac" }
-hpm-hal = { path = "../hpmicro-hal", optional = true, default-features = false }
+hpm-hal = { path = "../hpmicro-hal", default-features = false }
 rustsbi = { version = "0.4.0", features = ["machine"] }
 sbi-spec = { version = "0.0.7", features = ["legacy"] }
 hpm-rt = { git = "https://github.com/hpm-rs/hpm-rt.git", rev = "f9dd2f2122630ebfa8d9b96f539aba8be1c92784" }
@@ -27,13 +27,8 @@ hpm-rt = { git = "https://github.com/hpm-rs/hpm-rt.git", rev = "f9dd2f2122630ebf
 
 [features]
 default = []
-hpm6360evk = [
-    "hpm-metapac/hpm6360",
-    "hpm-hal/hpm6360",
-    "hpm-hal/defmt",
-    "hpm-hal/time",
-    "dep:hpm-hal",
-]
+hpm6360evk = ["hpm-metapac/hpm6360", "hpm-hal/hpm6360", "hpm-hal/time"]
+hpm6750evkmini = ["hpm-metapac/hpm6750", "hpm-hal/hpm6750", "hpm-hal/time"]
 ram = []
 flash = []
 sdram-rw-test = []

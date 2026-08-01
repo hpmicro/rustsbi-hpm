@@ -48,7 +48,8 @@ hpm_isp flash 0 write 0x0 rustsbi.bin
 
 ## 支持的开发版
 
-- [HPM6360EVK](http://hpmicro.com/resources/detail2.html?id=b60936f5-c3fe-4916-bb7d-854cc6bc5456)
+- [HPM6360EVK](https://www.hpmicro.com/Public/Uploads/uploadfile/files/20241024/HPM6360EVKUGV1.0.pdf)
+- [HPM6750EVKMINI](https://www.hpmicro.com/Public/Uploads/uploadfile/files/20240620/yiyasuoHPM6750EVKUSERGUIDE.pdf)
 
 ## Rust 版本
 
