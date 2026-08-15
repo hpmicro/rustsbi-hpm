@@ -1,15 +1,50 @@
 on:
   push:
-    branches: [ main, 'dev/*' ]
+    branches: [main, "dev/*"]
   pull_request:
 
 name: Build
 
+permissions:
+  contents: read
+
 jobs:
   build:
+    name: Build (${{ matrix.board }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - board: hpm6360evk
+            features: hpm6360evk,flash
+          - board: hpm6750evkmini
+            features: hpm6750evkmini,flash
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - name: Run cargo check
-        run: cargo check
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Run Clippy
+        run: cargo clippy --features ${{ matrix.features }} -- -D warnings
+
+      - name: Install cargo-binutils
+        run: cargo install cargo-binutils --locked
+
+      - name: Build firmware
+        run: cargo build --release --features ${{ matrix.features }}
+
+      - name: Generate binary
+        run: >-
+          cargo objcopy --release --features ${{ matrix.features }}
+          -- -O binary rustsbi-${{ matrix.board }}.bin
+
+      - name: Upload firmware
+        uses: actions/upload-artifact@v7
+        with:
+          path: rustsbi-${{ matrix.board }}.bin
+          archive: false
+          if-no-files-found: error
