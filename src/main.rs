@@ -1,7 +1,7 @@
 #![no_std]
 #![no_main]
-#![feature(naked_functions, asm_const)]
-#![deny(warnings)]
+// #![deny(warnings)]
+#![allow(unsafe_op_in_unsafe_fn, static_mut_refs)]
 
 mod board;
 mod extension;
@@ -26,7 +26,6 @@ use constants::*;
 use riscv_spec::*;
 use trap_stack::local_hsm;
 
-/// 特权软件信息。
 #[derive(Debug)]
 struct Supervisor {
     start_addr: usize,
@@ -39,7 +38,6 @@ fn main() -> ! {
 
     board::board_init();
 
-    // Print startup messages
     print!(
         "\
 [rustsbi] RustSBI version {rustsbi_version}, adapting to RISC-V SBI v2.0.0
@@ -54,7 +52,7 @@ fn main() -> ! {
         rustsbi_version = rustsbi::VERSION,
         logo = rustsbi::LOGO,
         impl_version = env!("CARGO_PKG_VERSION"),
-        model = "HPM6360EVK",
+        model = board::PLATFORM,
         firmware_address = _start as usize,
     );
     // 初始化 PMP
@@ -118,6 +116,6 @@ fn panic(info: &core::panic::PanicInfo) -> ! {
     loop {}
 }
 
-extern "C" {
+unsafe extern "C" {
     fn _start();
 }

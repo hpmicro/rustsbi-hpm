@@ -3,7 +3,7 @@ use riscv::register::{
     mcause::{self, Exception as E, Interrupt as I, Trap as T},
     mip, mtval, scause, sepc, sstatus, stval, stvec,
 };
-use riscv_decode::{decode, Instruction};
+use riscv_decode::{Instruction, decode};
 use rustsbi::RustSBI;
 
 use crate::extension::SBI;
@@ -249,8 +249,8 @@ extern "C" fn atomic_emulation_wrapper(ctx: EntireContext) -> EntireResult {
     unsafe { atomic_emulation(ctx) }
 }
 
-#[no_mangle]
-#[link_section = ".trap"]
+#[unsafe(no_mangle)]
+#[unsafe(link_section = ".trap")]
 pub extern "C" fn fast_handler(
     mut ctx: FastContext,
     a1: usize,

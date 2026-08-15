@@ -34,10 +34,15 @@
 ```shell
 # 安装 cargo-binutils
 cargo install cargo-binutils
-# 编译
-cargo build --features=flash --release
-# 生成 .bin 文件
-cargo objcopy --features=flash --release -- -O binary rustsbi.bin
+
+# 编译并生成 .bin 文件
+# HPM6360EVK
+cargo build --features=hpm6360evk,flash --release
+cargo objcopy --features=hpm6360evk,flash --release -- -O binary rustsbi.bin
+
+# HPM6750EVKMINI
+cargo build --features=hpm6750evkmini,flash --release
+cargo objcopy --features=hpm6750evkmini,flash --release -- -O binary rustsbi.bin
 ```
 
 编译完成后，可使用 [hpm_isp](https://github.com/tfx2001/hpm_isp) 进行烧录。修改启动模式选择管脚为 `BOOT_MODE[1:0]=0b10` 后将 USB0 连接至 PC，运行如下命令进行烧录。
@@ -48,12 +53,13 @@ hpm_isp flash 0 write 0x0 rustsbi.bin
 
 ## 支持的开发版
 
-- [HPM6360EVK](http://hpmicro.com/resources/detail2.html?id=b60936f5-c3fe-4916-bb7d-854cc6bc5456)
+- [HPM6360EVK](https://www.hpmicro.com/Public/Uploads/uploadfile/files/20241024/HPM6360EVKUGV1.0.pdf)
+- [HPM6750EVKMINI](https://www.hpmicro.com/Public/Uploads/uploadfile/files/20240620/yiyasuoHPM6750EVKUSERGUIDE.pdf)
 
 ## Rust 版本
 
 ```
-rustc 1.81.0-nightly (6be96e386 2024-07-09)
+rustc 1.89.0-nightly (4d08223c0 2025-05-31)
 ```
 
 # 相关链接
